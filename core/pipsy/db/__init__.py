@@ -5,7 +5,7 @@ from sqlalchemy.pool import NullPool
 from .. config import config
 
 # configuration
-SERVER   = config.get('database', 'host')
+SERVER   = config.get('database', 'server')
 PORT     = config.get('database', 'port')
 DATABASE = config.get('database', 'db')
 USER     = config.get('database', 'user')
@@ -35,7 +35,6 @@ def connect_pipeline(server=SERVER, port=PORT, user=USER,
         __cached_sessions[engine_str] = Connection(engine_str)
 
     return __cached_sessions[engine_str]
-
 
 
 class Connection(object):

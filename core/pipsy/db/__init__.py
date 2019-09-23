@@ -5,7 +5,7 @@ from sqlalchemy.pool import NullPool
 from .. config import config
 
 # configuration
-SERVER   = config.get('database', 'server')
+HOST     = config.get('database', 'host')
 PORT     = config.get('database', 'port')
 DATABASE = config.get('database', 'db')
 USER     = config.get('database', 'user')
@@ -14,21 +14,21 @@ PASSWD   = config.get('database', 'passwd')
 __cached_sessions = {}
 
 
-def connect_pipeline(server=SERVER, port=PORT, user=USER,
+def connect_pipeline(host=HOST, port=PORT, user=USER,
                      password=PASSWD, db=DATABASE):
     '''
     The main connect function to our pipeline database
 
-    args:
-        server (str)
+    Args:
+        host  (str)
         port   (str)
         user   (str)
         password (str)
         db     (str)
     '''
     params = 'charset=utf8&sql_mode=STRICT_ALL_TABLES'
-    engine_str = 'mysql://{user}:{password}@{server}:{port}/{db}?{params}'.format(
-                 user=user, password=password, server=server, port=port,
+    engine_str = 'mysql://{user}:{password}@{host}:{port}/{db}?{params}'.format(
+                 user=user, password=password, host=host, port=port,
                  db=db, params=params)
 
     if not __cached_sessions.get(engine_str):

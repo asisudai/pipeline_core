@@ -104,30 +104,35 @@ class BaseEntity(object):
         Create a new entity in the database.
         Will do SQL insert call to the db, making this entity permanently available.
         '''
-        session = None
-        try:
-            session = cls._connect()
-            session.start_transaction()
-
-            # Connect to db and add new instance
+        with db.session_context() as session:
             new = cls(**kw)
             session.add(new)
-            session.flush()
-            session.commit_transaction()
+        return new
 
-            return new
+        # session = None
+        # try:
+        #     session = cls._connect()
+        #     session.begin(subtransactions=True)
 
-        except (DataError, IntegrityError) as err:
-            LOG.fatal('{} {}'.format(err.__class__.__name__, err.message))
-            LOG.fatal('{} {}'.format(err.statement, err.params))
-            if session:
-                session.rollback_transaction()
-            raise
+        #     # Connect to db and add new instance
+        #     new = cls(**kw)
+        #     session.add(new)
+        #     session.flush()
+        #     session.commit()
 
-        except Exception:
-            if session:
-                session.rollback_transaction()
-            raise
+        #     return new
+
+        # except (DataError, IntegrityError) as err:
+        #     LOG.fatal('{} {}'.format(err.__class__.__name__, err.message))
+        #     LOG.fatal('{} {}'.format(err.statement, err.params))
+        #     if session:
+        #         session.rollback_transaction()
+        #     raise
+
+        # except Exception:
+        #     if session:
+        #         session.rollback_transaction()
+        #     raise
 
 
     @contextmanager

@@ -109,20 +109,6 @@ class BaseEntity(object):
             session.add(new)
         return new
 
-    @contextmanager
-    def session_context(self):
-        '''Provide a transactional scope around a series of operations.'''
-        session = inspect(self).session
-        session.begin(subtransactions=True)
-        try:
-            yield session
-        except Exception:
-            if session.transaction or session.transaction.is_active:
-                session.rollback()
-            raise
-        else:
-            session.commit()
-
     @classmethod
     def _connect(cls):
         '''

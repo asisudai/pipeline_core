@@ -9,53 +9,60 @@ from .. config import config
 LOG = logging.getLogger(__name__, level=logging.INFO)
 
 # configuration
+RDBMS    = config.get('database', 'rdbms')
 HOST     = config.get('database', 'host')
 PORT     = config.get('database', 'port')
-DATABASE = config.get('database', 'db')
+DATABASE = config.get('database', 'database')
 USER     = config.get('database', 'user')
 PASSWD   = config.get('database', 'passwd')
 
 __cached_sessions = {}
 
 
-def connect_pipeline(host=HOST, port=PORT, user=USER, password=PASSWD, db=DATABASE):
+def connect_pipeline(rdbms=RDBMS, host=HOST, port=PORT, user=USER,
+                     password=PASSWD, database=DATABASE):
     '''
     The main connect function to our pipeline database
 
     Args:
+        rdbms    (str) :
         host     (str) :
         port     (str) :
         user     (str) :
         password (str) :
         db       (str) :
     '''
-    params = 'charset=utf8&sql_mode=STRICT_ALL_TABLES'
-    engine_string = 'mysql://{user}:{password}@{host}:{port}/{db}?{params}'.format(
-                    user=user, password=password, host=host, port=port, db=db, params=params)
+    engine_url = build_engine_url(rdbms, host, port, user, password, database)
 
-    if not __cached_sessions.get(engine_string):
-        __cached_sessions[engine_string] = __make_session(engine_string)
+    if not __cached_sessions.get(engine_url):
+        __cached_sessions[engine_url] = __make_session(engine_url)
 
-    return __cached_sessions[engine_string]
+    return __cached_sessions[engine_url]
 
 
-def __make_session(engine_string):
-    """
-    Create a new scoped session.
+def build_engine_url(rdbms=RDBMS, host=HOST, port=PORT, user=USER, password=PASSWD,
+                     database=DATABASE):
+    '''
+    Build engine_url to be used when calling create_engine()
+    '''
+    params = ''
+    if rdbms == 'mysql':
+        params = 'sql_mode=STRICT_ALL_TABLES'
 
-    Args:
-        engine_string (str): a valid MySQL DBAPIs string.
-                             "mysql://user:password@%:3306/database"
-    """
-    engine = create_engine(engine_string, poolclass=NullPool, echo=False, encoding="utf-8")
-    session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=True)
-    scoped_session_ = scoped_session(session_factory)
-    return scoped_session_
-
+    url = '{rdbms}://{user}:{password}@{host}:{port}/{database}?{params}'.format(
+          rdbms=rdbms, user=user, password=password, host=host, port=port, database=database,
+          params=params)
+    return url
 
 @contextmanager
 def session_context():
-    """Provide a transactional scope around a series of operations."""
+    '''
+    Provide a transactional scope around a series of operations.
+
+        e.g.
+        with session_context() as session:
+            session.add()
+    '''
     session = connect_pipeline()
     session.begin(subtransactions=True)
     try:
@@ -64,7 +71,7 @@ def session_context():
         LOG.fatal('{} {}'.format(err.__class__.__name__, err.message))
         LOG.fatal('{} {}'.format(err.statement, err.params))
         if session:
-            session.rollback_transaction()
+            session.rollback()
         raise
     except Exception:
         if session.transaction or session.transaction.is_active:
@@ -72,6 +79,22 @@ def session_context():
         raise
     else:
         session.commit()
+
+
+def __make_session(engine_url):
+    """
+    Create a new scoped session.
+
+    Args:
+        engine_url (str): a valid MySQL DBAPIs string.
+                             "mysql://user:password@%:3306/database"
+    """
+    engine = create_engine(engine_url, poolclass=NullPool, echo=False, encoding="utf-8")
+    session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=True)
+    scoped_session_ = scoped_session(session_factory)
+    return scoped_session_
+
+
 
 
 # class Connection(object):

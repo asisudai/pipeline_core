@@ -92,7 +92,8 @@ class Project(Base):
         return query.all()
 
     @classmethod
-    def create(cls, name, root, format='tv', description='', status=None, shotgun_id=None):
+    def create(cls, name, root, format='tv', description='', status=None, shotgun_id=None,
+               session=None):
         '''
         Create a project.
         Will do an SQL insert call to the db, making this entity permanently available.
@@ -112,4 +113,4 @@ class Project(Base):
                     status      = status,
                     description = description)
 
-        return super(Project, cls).create(**data)
+        return super(Project, cls).create(session, **data)

@@ -99,40 +99,33 @@ class BaseEntity(object):
         return cls._connect().query(cls).filter(cls.id.in_(ids)).all()
 
     @classmethod
-    def create(cls, **kw):
+    def create(cls, session=None, **kw):
         '''
         Create a new entity in the database.
         Will do SQL insert call to the db, making this entity permanently available.
         '''
-        with db.session_context() as session:
+
+        if not session:
+            session = cls._connect()
+
+        session.begin(subtransactions=True)
+        
+        try:
             new = cls(**kw)
             session.add(new)
-        return new
+            # session.flush()
+            session.commit()
+            return new
 
-        # session = None
-        # try:
-        #     session = cls._connect()
-        #     session.begin(subtransactions=True)
+        except (DataError, IntegrityError) as err:
+            LOG.fatal('{} {}'.format(err.__class__.__name__, err))
+            LOG.fatal('{} {}'.format(err.statement, err.params))
+            session.rollback()
+            raise
 
-        #     # Connect to db and add new instance
-        #     new = cls(**kw)
-        #     session.add(new)
-        #     session.flush()
-        #     session.commit()
-
-        #     return new
-
-        # except (DataError, IntegrityError) as err:
-        #     LOG.fatal('{} {}'.format(err.__class__.__name__, err.message))
-        #     LOG.fatal('{} {}'.format(err.statement, err.params))
-        #     if session:
-        #         session.rollback_transaction()
-        #     raise
-
-        # except Exception:
-        #     if session:
-        #         session.rollback_transaction()
-        #     raise
+        except Exception:
+            session.rollback()
+            raise
 
 
     @contextmanager

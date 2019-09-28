@@ -1,30 +1,36 @@
-import pytest
-from sqlalchemy.exc import DataError, IntegrityError
-from pipsy.db import connect_pipeline
-from pipsy.entities.core import Base
+from sqlalchemy.exc import IntegrityError
 from pipsy.entities.project import Project
 
 
-@pytest.fixture(scope="module")
-def session(tmpdir_factory):
-    session = connect_pipeline()
-    return session
+def test_find(project):
+    assert project in Project.find()
 
 
-@pytest.fixture(scope="module")
-def create_db(session):
-    Base.metadata.drop_all(session.connection().engine, checkfirst=True)
-    Base.metadata.create_all(session.connection().engine, checkfirst=True)
+def test_findby_ids(project):
+    assert project in Project.findby_ids([project.id])
 
 
-def test_project(session, create_db, capsys):
-    # with capsys.disabled():
-    new = Project.create(name='unittest', root='/tmp/unittest')
-    assert new in Project.find()
-    # print(Project.find())
-    
-    # Catch unique constraint "Duplicate entry..."
+def test_findby_name(project):
+    assert project == Project.findby_name(project.name)
+
+
+def test_find_one(project):
+    assert project == Project.find_one(name=project.name)
+
+
+def test_create_unique_name(project, session):
     try:
-        Project.create(name='unittest', root='/tmp/unittest')
-    except Exception, err:
-        assert isinstance(err, IntegrityError)
+        # Expecting IntegrityError error "Duplicate entry..."
+        Project.create(name='unittest', root='/tmp/unittest2', session=session)
+        raise AssertionError('Duplicate entry for project name was NOT cought!')
+    except IntegrityError:
+        pass
+
+
+def test_create_unique_root(project, session):
+    try:
+        # Expecting IntegrityError error "Duplicate entry..."
+        Project.create(name='unittest2', root='/tmp/unittest', session=session)
+        raise AssertionError('Duplicate entry for project root was NOT cought!')
+    except IntegrityError:
+        pass

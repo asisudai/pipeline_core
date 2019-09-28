@@ -22,16 +22,15 @@ class Project(Base):
                       Index('ix_name', 'name'),
                       Index('ix_sg', 'shotgun_id'),
 
-                      UniqueConstraint('name', name='uc_name'),
-                      UniqueConstraint('root', name='uc_root'),
-                      UniqueConstraint('shotgun_id', name='uc_sg')
+                      UniqueConstraint('name', name='uq_name'),
+                      UniqueConstraint('root', name='uq_root'),
+                      UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
     def __repr__(self):
         return "{cls}(name='{name}', id={id})".format(cls=self.__class__.__name__,
                                                       name=self.name,
                                                       id=self.id)
-
 
     @classmethod
     def findby_name(cls, name):
@@ -44,14 +43,17 @@ class Project(Base):
         '''
         Return Project instances by query arguments
 
-        args:
-            name            (str) : name.
-            root            (str) : filesystem root.
-            format          (str) : format ['tv', 'film']
-            description     (str) : description.
-            status          (str) : status. default to 'act'.
-            id         (int/list) : id.
-            shotgun_id (int/list) : shotgun id.
+            Args:
+                name            (str) : name.
+                root            (str) : filesystem root.
+                format          (str) : format ['tv', 'film']
+                description     (str) : description.
+                status          (str) : status. default to 'act'.
+                id         (int/list) : id.
+                shotgun_id (int/list) : shotgun id.
+
+            Returns:
+                A list of Project instances
 
         '''
         query = cls._connect().query(cls)
@@ -92,18 +94,20 @@ class Project(Base):
         return query.all()
 
     @classmethod
-    def create(cls, name, root, format='tv', description='', status=None, shotgun_id=None,
-               session=None):
+    def create(cls, name, root, format='tv', description='', status=None, shotgun_id=None):
         '''
-        Create a project.
-        Will do an SQL insert call to the db, making this entity permanently available.
+        Create a new project.
 
-            name        (str) : name.
-            root        (str) : filesystem root.
-            format      (str) : format ['tv', 'film']
-            description (str) : description.
-            status      (str) : status. default to 'act'.
-            shotgun_id  (int) : shotgun id.
+            Args:
+                name        (str) : name.
+                root        (str) : filesystem root.
+                format      (str) : format ['tv', 'film']
+                description (str) : description.
+                status      (str) : status. default to 'act'.
+                shotgun_id  (int) : shotgun id.
+            
+            Returns:
+                New Project instance
 
         '''
         data = dict(name        = name,
@@ -113,4 +117,4 @@ class Project(Base):
                     status      = status,
                     description = description)
 
-        return super(Project, cls).create(session, **data)
+        return super(Project, cls).create(**data)

@@ -99,34 +99,15 @@ class BaseEntity(object):
         return cls._connect().query(cls).filter(cls.id.in_(ids)).all()
 
     @classmethod
-    def create(cls, session=None, **kw):
+    def create(cls, **kw):
         '''
         Create a new entity in the database.
         Will do SQL insert call to the db, making this entity permanently available.
         '''
-
-        if not session:
-            session = cls._connect()
-
-        session.begin(subtransactions=True)
-        
-        try:
+        with db.session_context() as session:
             new = cls(**kw)
             session.add(new)
-            # session.flush()
-            session.commit()
-            return new
-
-        except (DataError, IntegrityError) as err:
-            LOG.fatal('{} {}'.format(err.__class__.__name__, err))
-            LOG.fatal('{} {}'.format(err.statement, err.params))
-            session.rollback()
-            raise
-
-        except Exception:
-            session.rollback()
-            raise
-
+        return new
 
     @contextmanager
     def session_context(self):
@@ -143,12 +124,13 @@ class BaseEntity(object):
             session.commit()
 
     @classmethod
-    def _connect(self):
+    def _connect(cls):
         '''
         Returns db connection.
         Better to use self.session_context with instance.
         '''
-        return db.connect_pipeline()
+        return db.connect_database(rdbms=db.RDBMS, host=db.HOST, port=db.PORT, user=db.USER,
+                                   password=db.PASSWD, database=db.DATABASE)
 
 
 # Register BaseEntity with sqlAlchemy declarative base.

@@ -1,5 +1,9 @@
 from sqlalchemy.exc import IntegrityError
-from pipsy.entities.project import Project
+from pipsy.entities import Project
+
+
+def test_cls_name():
+    assert Project.cls_name() == 'Project'
 
 
 def test_find(project):

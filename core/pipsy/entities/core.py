@@ -2,7 +2,6 @@
 '''Entities Base Class'''
 
 # imports
-from contextlib import contextmanager
 from sqlalchemy import inspect, MetaData, DateTime, String, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.util import identity_key
@@ -83,7 +82,7 @@ class BaseEntity(object):
             id (int): The id to search by.
         '''
         try:
-            return cls._connect().query(cls).filter_by(id=id).one()
+            return cls.query().filter_by(id=id).one()
         except NoResultFound:
             raise NoResultFound(
                 "No {} found for id:{}".format(cls.__name__, id))
@@ -96,7 +95,7 @@ class BaseEntity(object):
         args:
             ids (list): The ids to search by.
         '''
-        return cls._connect().query(cls).filter(cls.id.in_(ids)).all()
+        return cls.query().filter(cls.id.in_(ids)).all()
 
     @classmethod
     def create(cls, **kw):
@@ -110,7 +109,45 @@ class BaseEntity(object):
         return new
 
     @classmethod
-    def _connect(cls):
+    def cls_name(cls):
+        '''Returns entity's class name'''
+        return cls.__name__
+
+    @classmethod
+    def query(cls, id=None, status=None, shotgun_id=None):
+        '''
+        Return a Query instance. Supports common queries done by entities.
+        '''
+        query = cls.__connect().query(cls)
+
+        if status:
+            if isinstance(status, (list, tuple)):
+                query = query.filter(cls.status.in_(status))
+            elif isinstance(status, basestring):
+                query = query.filter(cls.status == status)
+            else:
+                raise ValueError('Invalid argument given {}'.format(id))
+
+        if shotgun_id:
+            if isinstance(shotgun_id, (int, long)):
+                query = query.filter(cls.shotgun_id == shotgun_id)
+            elif isinstance(shotgun_id, (list, tuple)):
+                query = query.filter(cls.shotgun_id.in_(shotgun_id))
+            else:
+                raise ValueError('Invalid argument given {}'.format(type(shotgun_id)))
+
+        if id:
+            if isinstance(id, (int, long)):
+                query = query.filter(cls.id == id)
+            elif isinstance(id, (list, tuple)):
+                query = query.filter(cls.id.in_(id))
+            else:
+                raise ValueError('Invalid argument given {}'.format(type(id)))
+
+        return query
+
+    @classmethod
+    def __connect(cls):
         '''
         Returns db connection.
         Better to use self.session_context with instance.

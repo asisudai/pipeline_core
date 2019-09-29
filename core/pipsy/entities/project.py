@@ -14,7 +14,8 @@ class Project(Base):
                       Column('id', Integer, primary_key=True),
                       Column('shotgun_id', Integer, nullable=True),
                       Column('name', String(32), nullable=False),
-                      Column('status', Enum('act', 'dis', 'hld'), default='act', nullable=False),
+                      Column('status', Enum('act', 'dis', 'hld', 'arc'),
+                             default='act', nullable=False),
                       Column('format', Enum('tv', 'film'), default='film', nullable=False),
                       Column('root', String(128), nullable=False),
                       Column('description', String(255)),
@@ -27,6 +28,8 @@ class Project(Base):
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
+    _presets = relationship('Preset', backref='project', lazy='dynamic')
+
     def __repr__(self):
         return "{cls}(name='{name}', id={id})".format(cls=self.__class__.__name__,
                                                       name=self.name,
@@ -35,7 +38,7 @@ class Project(Base):
     @classmethod
     def findby_name(cls, name):
         '''Return a Project instance by name'''
-        return cls._connect().query(cls).filter(cls.name == name).one()
+        return cls.query().filter(cls.name == name).one()
 
     @classmethod
     def find(cls, name=None, format=None, status=None, root=None,
@@ -56,7 +59,7 @@ class Project(Base):
                 A list of Project instances
 
         '''
-        query = cls._connect().query(cls)
+        query = cls.query(id=id, status=status, shotgun_id=shotgun_id)
 
         if name:
             query = query.filter(cls.name == name)
@@ -66,29 +69,6 @@ class Project(Base):
 
         if root:
             query = query.filter(cls.root == root)
-
-        if status is None:
-            pass
-        elif isinstance(status, (list, tuple)):
-            query = query.filter(cls.status.in_(status))
-        elif status:
-            query = query.filter(cls.status == status)
-
-        if shotgun_id:
-            if isinstance(shotgun_id, (int, long)):
-                query = query.filter(cls.shotgun_id == shotgun_id)
-            elif isinstance(shotgun_id, (list, tuple)):
-                query = query.filter(cls.shotgun_id.in_(shotgun_id))
-            else:
-                raise ValueError('Invalid argument given {}'.format(type(shotgun_id)))
-
-        if id:
-            if isinstance(id, (int, long)):
-                query = query.filter(cls.id == id)
-            elif isinstance(id, (list, tuple)):
-                query = query.filter(cls.id.in_(id))
-            else:
-                raise ValueError('Invalid argument given {}'.format(type(id)))
 
         query = query.order_by(cls.name)
         return query.all()
@@ -105,7 +85,7 @@ class Project(Base):
                 description (str) : description.
                 status      (str) : status. default to 'act'.
                 shotgun_id  (int) : shotgun id.
-            
+
             Returns:
                 New Project instance
 

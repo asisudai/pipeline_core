@@ -57,7 +57,7 @@ def build_engine_url(rdbms=RDBMS, host=HOST, port=PORT, user=USER, password=PASS
             database (str) : database to select.
 
         Returns:
-            engine url string.    
+            engine url string.
     '''
     params = ''
     if rdbms == 'mysql':
@@ -67,6 +67,7 @@ def build_engine_url(rdbms=RDBMS, host=HOST, port=PORT, user=USER, password=PASS
           rdbms=rdbms, user=user, password=password, host=host, port=port, database=database,
           params=params)
     return url
+
 
 @contextmanager
 def session_context():
@@ -106,4 +107,3 @@ def __make_session(engine_url):
     session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=True)
     scoped_session_ = scoped_session(session_factory)
     return scoped_session_
-

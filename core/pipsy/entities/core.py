@@ -120,6 +120,14 @@ class BaseEntity(object):
         '''
         query = cls.__connect().query(cls)
 
+        if id:
+            if isinstance(id, (int, long)):
+                query = query.filter(cls.id == id)
+            elif isinstance(id, (list, tuple)):
+                query = query.filter(cls.id.in_(id))
+            else:
+                raise ValueError('Invalid argument given {}'.format(type(id)))
+
         if status:
             if isinstance(status, (list, tuple)):
                 query = query.filter(cls.status.in_(status))
@@ -135,14 +143,6 @@ class BaseEntity(object):
                 query = query.filter(cls.shotgun_id.in_(shotgun_id))
             else:
                 raise ValueError('Invalid argument given {}'.format(type(shotgun_id)))
-
-        if id:
-            if isinstance(id, (int, long)):
-                query = query.filter(cls.id == id)
-            elif isinstance(id, (list, tuple)):
-                query = query.filter(cls.id.in_(id))
-            else:
-                raise ValueError('Invalid argument given {}'.format(type(id)))
 
         return query
 

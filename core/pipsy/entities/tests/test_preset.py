@@ -3,7 +3,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from pipsy.entities import Preset
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def preset(project):
     try:
         return Preset.find_one(entity=project)

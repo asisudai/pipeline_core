@@ -11,11 +11,11 @@ class Project(Base):
 
     __table__ = Table('project', Base.metadata,
                       Column('id', Integer, primary_key=True),
-                      Column('shotgun_id', Integer, nullable=True),
                       Column('name', String(32), nullable=False),
                       Column('status', Enum('act', 'dis', 'hld', 'arc'),
                              default='act', nullable=False),
-                      Column('format', Enum('tv', 'film'), default='film', nullable=False),
+                      Column('shotgun_id', Integer, nullable=True),
+                      Column('schema', Enum('tv', 'film'), default='film', nullable=False),
                       Column('root', String(128), nullable=False),
                       Column('description', String(255)),
 
@@ -27,7 +27,10 @@ class Project(Base):
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
-    _presets = relationship('Preset', backref='project', lazy='dynamic')
+    _formats = relationship('Format', backref='project', lazy='dynamic',
+                            cascade="all, delete-orphan")
+    _episodes = relationship('Episode', backref='project', lazy='dynamic',
+                             order_by='Episode.name', cascade="all, delete-orphan")
 
     def __repr__(self):
         return "{cls}(name='{name}', id={id})".format(cls=self.__class__.__name__,
@@ -73,14 +76,14 @@ class Project(Base):
         return query.all()
 
     @classmethod
-    def create(cls, name, root, format='tv', description='', status=None, shotgun_id=None):
+    def create(cls, name, root, schema='tv', description='', status=None, shotgun_id=None):
         '''
         Create a new project.
 
             Args:
                 name        (str) : name.
                 root        (str) : filesystem root.
-                format      (str) : format ['tv', 'film']
+                schema      (str) : schema ['tv', 'film']
                 description (str) : description.
                 status      (str) : status. default to 'act'.
                 shotgun_id  (int) : shotgun id.
@@ -91,7 +94,7 @@ class Project(Base):
         '''
         data = dict(name        = name,
                     shotgun_id  = shotgun_id,
-                    format      = format,
+                    schema      = schema,
                     root        = root,
                     status      = status,
                     description = description)

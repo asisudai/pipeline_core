@@ -57,11 +57,14 @@ class BaseEntity(object):
     def find(cls, **kwargs):
         '''find() must be override by subclass'''
         raise NotImplementedError(
-            'find() needs to be override by subclass "{}"'.format(cls.__name__))
+            'find() must be implemented by subclass "{}"'.format(cls.__name__))
 
     @classmethod
     def find_one(cls, **kwargs):
-        '''wrapper of find() that return a single result'''
+        '''
+        Wrapper of find() that return a single result.
+        Will error if None or more then one results found.
+        '''
         result = cls.find(**kwargs)
 
         if not result:

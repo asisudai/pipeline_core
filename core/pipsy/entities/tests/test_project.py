@@ -1,3 +1,4 @@
+import pytest
 from sqlalchemy.exc import IntegrityError
 from pipsy.entities import Project
 
@@ -22,19 +23,13 @@ def test_find_one(project):
     assert project == project.find_one(name=project.name)
 
 
+@pytest.mark.xfail(raises=IntegrityError)
 def test_create_unique_name(project, session):
-    try:
-        # Expecting IntegrityError error "Duplicate entry..."
-        Project.create(name='unittest', root='/tmp/unittest2')
-        raise AssertionError('Duplicate entry for project name was NOT cought!')
-    except IntegrityError:
-        pass
+    # Expecting IntegrityError error "Duplicate entry..."
+    Project.create(name='unittest', root='/tmp/unittest2')
 
 
+@pytest.mark.xfail(raises=IntegrityError)
 def test_create_unique_root(project, session):
-    try:
-        # Expecting IntegrityError error "Duplicate entry..."
-        Project.create(name='unittest2', root='/tmp/unittest')
-        raise AssertionError('Duplicate entry for project root was NOT cought!')
-    except IntegrityError:
-        pass
+    # Expecting IntegrityError error "Duplicate entry..."
+    Project.create(name='unittest2', root='/tmp/unittest')

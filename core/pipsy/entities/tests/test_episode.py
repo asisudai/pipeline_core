@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from pipsy.entities import Project, Episode
+from pipsy.entities import Episode
 
 
 @pytest.fixture(scope="module")
@@ -33,10 +33,7 @@ def test_find_one(episode):
     assert episode == Episode.find_one(id=episode.id)
 
 
+@pytest.mark.xfail(raises=IntegrityError)
 def test_create_unique_proj_name(episode, session):
-    try:
-        # Expecting IntegrityError error "Duplicate entry..."
-        Episode.create(name=episode.name, project=episode.project)
-        raise AssertionError('Duplicate entry for name was NOT cought!')
-    except IntegrityError:
-        pass
+    # Expecting IntegrityError error "Duplicate entry..."
+    Episode.create(name=episode.name, project=episode.project)

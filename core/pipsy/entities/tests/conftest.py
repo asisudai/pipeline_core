@@ -29,7 +29,6 @@ def create_db(session):
 
 @pytest.fixture(scope="session")
 def project(session, create_db):
-    new = Project.create(name='unittest', root='/tmp/unittest')
+    new = Project.create(name='unittest', root='/tmp/unittest', schema='film')
     assert new in Project.find()
     return new
-

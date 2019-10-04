@@ -23,8 +23,9 @@ class BaseEntity(object):
             setattr(self, key, value)
 
     def __repr__(self):
-        return "{cls}(id={id})".format(cls=self.__class__.__name__,
-                                       id=self.id)
+        return "{cls}(name='{name}', id={id})".format(cls=self.__class__.__name__,
+                                                      name=self.name,
+                                                      id=self.id)
 
     def __ne__(self, other):
         return not self == other

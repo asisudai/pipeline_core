@@ -24,12 +24,12 @@ def test_find_one(project):
 
 
 @pytest.mark.xfail(raises=IntegrityError)
-def test_create_unique_name(project, session):
+def test_create_unique_name(project):
     # Expecting IntegrityError error "Duplicate entry..."
-    Project.create(name='unittest', root='/tmp/unittest2')
+    Project.create(name='unittest', root='/tmp/unittest2', schema='film')
 
 
 @pytest.mark.xfail(raises=IntegrityError)
-def test_create_unique_root(project, session):
+def test_create_unique_root(project):
     # Expecting IntegrityError error "Duplicate entry..."
-    Project.create(name='unittest2', root='/tmp/unittest')
+    Project.create(name='unittest2', root='/tmp/unittest', schema='film')

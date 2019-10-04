@@ -25,9 +25,9 @@ class Sequence(Base):
                       Index('ix_sg', 'shotgun_id'),
 
                       UniqueConstraint('project_id', 'episode_id', 'name',
-                                       name='uq_proj_name'),
+                                       name='uq_proj_ep_name'),
                       UniqueConstraint('project_id', 'episode_id', 'basename',
-                                       name='uq_proj_basename'),
+                                       name='uq_proj_ep_basename'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
@@ -68,7 +68,7 @@ class Sequence(Base):
             Args:
                 name            (str) : Sequence name.
                 project     (Project) : parent Project instance.
-                project     (Episode) : parent Episode instance.
+                episode     (Episode) : parent Episode instance.
                 status          (str) : Sequence status.
                 shotgun_id (int/list) : Sequence shotgun id(s).
 
@@ -87,6 +87,7 @@ class Sequence(Base):
                     basename=name,
                     status=status,
                     project_id=project.id,
+                    episode_id=getattr(episode, 'id', None),
                     shotgun_id=shotgun_id)
 
-        return super(Episode, cls).create(**data)
+        return super(Sequence, cls).create(**data)

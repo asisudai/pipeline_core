@@ -12,11 +12,12 @@ def session(tmpdir_factory):
     engine_url = build_engine_url(database='unittest')
 
     if not sqlalchemy_utils.functions.database_exists(engine_url):
-        raise RuntimeError("Please create 'unittest' database for unittest.")
-        # sqlalchemy_utils.functions.create_database(engine_url)
+        sqlalchemy_utils.functions.create_database(engine_url)
+        # raise RuntimeError("Please create 'unittest' database for unittest.")
 
     session = connect_database(database='unittest')
     assert session.bind.url.database == 'unittest', "Not using 'unittest' database"
+
     return session
 
 
@@ -25,6 +26,9 @@ def create_db(session):
     assert session.bind.url.database == 'unittest', "Not using 'unittest' database"
     Base.metadata.drop_all(session.connection().engine, checkfirst=True)
     Base.metadata.create_all(session.connection().engine, checkfirst=True)
+
+    # Generated column for episode_id_virtual to support unique constraint with NULL episodes
+    session.bind.execute("ALTER TABLE `unittest`.`sequence` CHANGE COLUMN `episode_id_virtual` `episode_id_virtual` INT(11) GENERATED ALWAYS AS(IFNULL(`episode_id`, 0)) STORED")
 
 
 @pytest.fixture(scope="session")

@@ -2,7 +2,7 @@
 
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index,
-                        ForeignKey, UniqueConstraint)
+                        ForeignKey, UniqueConstraint, FetchedValue)
 # from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
@@ -18,15 +18,16 @@ class Sequence(Base):
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('episode_id', Integer, ForeignKey(Episode.id)),
+                      Column('episode_id_virtual', Integer, FetchedValue(), nullable=False),
                       Column('shotgun_id', Integer),
 
                       Index('ix_proj_name', 'project_id', 'name', 'status'),
                       Index('ix_episode_name', 'episode_id', 'name', 'status'),
                       Index('ix_sg', 'shotgun_id'),
 
-                      UniqueConstraint('project_id', 'episode_id', 'name',
+                      UniqueConstraint('project_id', 'episode_id_virtual', 'name',
                                        name='uq_proj_ep_name'),
-                      UniqueConstraint('project_id', 'episode_id', 'basename',
+                      UniqueConstraint('project_id', 'episode_id_virtual', 'basename',
                                        name='uq_proj_ep_basename'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )

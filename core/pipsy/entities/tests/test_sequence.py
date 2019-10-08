@@ -33,7 +33,10 @@ def test_find_one(sequence):
     assert sequence == Sequence.find_one(id=sequence.id)
 
 
-# @pytest.mark.xfail(raises=IntegrityError)
+def test_episode_id_virtual(sequence):
+    assert sequence.episode_id_virtual == (sequence.episode_id or 0)
+
+
 def test_create_unique_proj_ep_name(sequence):
     # Expecting IntegrityError error "Duplicate entry..."
     try:

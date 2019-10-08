@@ -23,13 +23,19 @@ def test_find_one(project):
     assert project == project.find_one(name=project.name)
 
 
-@pytest.mark.xfail(raises=IntegrityError)
 def test_create_unique_name(project):
     # Expecting IntegrityError error "Duplicate entry..."
-    Project.create(name='unittest', root='/tmp/unittest2', schema='film')
+    try:
+        Project.create(name='unittest', root='/tmp/unittest2', schema='film')
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
 
 
-@pytest.mark.xfail(raises=IntegrityError)
 def test_create_unique_root(project):
     # Expecting IntegrityError error "Duplicate entry..."
-    Project.create(name='unittest2', root='/tmp/unittest', schema='film')
+    try:
+        Project.create(name='unittest2', root='/tmp/unittest', schema='film')
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')

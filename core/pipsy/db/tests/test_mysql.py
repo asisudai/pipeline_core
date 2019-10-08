@@ -7,6 +7,7 @@ def session():
     session = db.connect_database()
     return session
 
+
 def test_connect_pipeline(session):
     '''Connect to pipeline's database'''
     databases = session.bind.execute('show databases;').fetchall()

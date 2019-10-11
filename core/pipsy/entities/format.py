@@ -7,6 +7,8 @@ from sqlalchemy import (Table, Column, Integer, String, Enum, Index, Float,
 from .core import Base
 from .project import Project
 from .episode import Episode
+from .sequence import Sequence
+from .shot import Shot
 
 
 class Format(Base):
@@ -26,8 +28,8 @@ class Format(Base):
                       Column('engine', String(16)),
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('episode_id', Integer, ForeignKey(Episode.id)),
-                    #   Column('sequence_id', Integer, ForeignKey('sequence.id')),
-                    #   Column('shot_id', Integer, ForeignKey('shot.id')),
+                      Column('sequence_id', Integer, ForeignKey(Sequence.id)),
+                      Column('shot_id', Integer, ForeignKey(Shot.id)),
                     #   Column('res_high_width', SmallInteger, default=1920),
                     #   Column('res_high_height', SmallInteger, default=800),
                     #   Column('res_mid_width', SmallInteger, default=1920),
@@ -39,11 +41,14 @@ class Format(Base):
                     #   Column('rights', String(32), default=''),
 
                       Index('ix_proj_stat_name', 'project_id', 'name', 'status'),
+                      Index('ix_name_entities', 'name', 'project_id', 'sequence_id', 'shot_id'),
                       Index('ix_episode', 'episode_id'),
-                    #   Index('ix_name_entities', 'name', 'project_id', 'sequence_id', 'shot_id'),
-                    #   Index('ix_sequence', 'sequence_id'),
+                      Index('ix_sequence', 'sequence_id'),
 
-                      UniqueConstraint('project_id', 'name', name='uq_proj_name')
+                      UniqueConstraint('project_id', 'name', name='uq_proj_name'),
+                      UniqueConstraint('episode_id', 'name', name='uq_ep_name'),
+                      UniqueConstraint('sequence_id', 'name', name='uq_seq_name'),
+                      UniqueConstraint('shot_id', 'name', name='uq_shot_name')
                       )
 
     def __repr__(self):

@@ -44,9 +44,11 @@ class Shot(Base):
 
     @hybrid_property
     def fullname(self):
-        if self.sequence.episode:
-            return '{}_{}_{}'.format(self.sequence.episode.name, self.sequence.name, self.name)
-        return '{}_{}'.format(self.sequence.name, self.name)
+        '''
+        Return Shot fullname string.
+        {episode.name}_{sequence.name}_{shot.name} or {sequence.name}_{shot.name}
+        '''
+        return '{}_{}'.format(self.sequence.fullname, self.name)
 
     @hybrid_property
     def cut(self):

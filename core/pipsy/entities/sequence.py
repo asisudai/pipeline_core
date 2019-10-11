@@ -3,6 +3,7 @@
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, SmallInteger,
                         ForeignKey, UniqueConstraint)
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
@@ -60,6 +61,16 @@ class Sequence(Base):
             return self.episode
         else:
             return self.project
+
+    @hybrid_property
+    def fullname(self):
+        '''
+        Return Sequence fullname string.
+        {episode.name}_{sequence.name} or {sequence.name}
+        '''
+        if self.episode_id:
+            return '{}_{}'.format(self.episode.name, self.name)
+        return '{}'.format(self.name)
 
     @classmethod
     def find(cls, project=None, episode=None, name=None, status=None, id=None, shotgun_id=None):

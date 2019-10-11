@@ -54,3 +54,7 @@ def test_cut(shot):
 
 def test_fullname(shot):
     assert isinstance(shot.fullname, basestring)
+
+
+def test_fullname_episode(shot_episode):
+    assert isinstance(shot_episode.fullname, basestring)

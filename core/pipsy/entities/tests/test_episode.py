@@ -21,6 +21,10 @@ def test_project(episode, project):
     assert episode.project == project
 
 
+def test_parent_project(episode, project):
+    assert episode.parent == project
+
+
 def test_find(episode):
     assert episode in Episode.find()
 

@@ -46,6 +46,16 @@ class Sequence(Base):
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
+    @property
+    def parent(self):
+        '''
+        Return Sequence parent entity, Episode if linked other wise to a Project.
+        '''
+        if self.episode_id:
+            return self.episode
+        else:
+            return self.project
+
     @classmethod
     def find(cls, project=None, episode=None, name=None, status=None, id=None, shotgun_id=None):
         '''
@@ -97,6 +107,14 @@ class Sequence(Base):
         elif project.cls_name() != 'Project':
             raise TypeError('project arg must be an Project class. Given {!r}'
                             .format(type(project)))
+
+        if episode:
+            if not isinstance(episode, Base):
+                raise TypeError('episode arg must be an Entity class. Given {!r}'
+                                .format(type(project)))
+            elif episode.cls_name() != 'Episode':
+                raise TypeError('episode arg must be an Episode class. Given {!r}'
+                                .format(type(project)))
 
         data = dict(name=name,
                     basename=name,

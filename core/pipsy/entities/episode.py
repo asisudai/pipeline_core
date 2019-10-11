@@ -3,7 +3,7 @@
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index,
                         ForeignKey, UniqueConstraint)
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
 
@@ -25,6 +25,15 @@ class Episode(Base):
                       UniqueConstraint('project_id', 'basename', name='uq_proj_basename'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
+    _sequences = relationship('Sequence', backref='episode', lazy='dynamic',
+                              order_by='Sequence.name', cascade="all, delete-orphan")
+
+    @property
+    def parent(self):
+        '''
+        Return Episode parent Project entity.
+        '''
+        return self.project
 
     @classmethod
     def find(cls, project=None, name=None, status=None, id=None, shotgun_id=None):

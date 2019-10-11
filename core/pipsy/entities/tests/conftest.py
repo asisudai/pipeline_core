@@ -27,9 +27,6 @@ def create_db(session):
     Base.metadata.drop_all(session.connection().engine, checkfirst=True)
     Base.metadata.create_all(session.connection().engine, checkfirst=True)
 
-    # Generated column for episode_id_virtual to support unique constraint with NULL episodes
-    session.bind.execute("ALTER TABLE `unittest`.`sequence` CHANGE COLUMN `episode_id_virtual` `episode_id_virtual` INT(11) GENERATED ALWAYS AS(IFNULL(`episode_id`, 0)) STORED")
-
 
 @pytest.fixture(scope="session")
 def project(session, create_db):

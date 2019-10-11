@@ -1,4 +1,3 @@
-import pytest
 from sqlalchemy.exc import IntegrityError
 from pipsy.entities import Project
 

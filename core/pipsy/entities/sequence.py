@@ -2,11 +2,24 @@
 
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index,
-                        ForeignKey, UniqueConstraint, FetchedValue)
+                        ForeignKey, UniqueConstraint)
 # from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
 from .episode import Episode
+
+
+def calc_episode(context):
+    '''
+    Update episode_id_virtual with the episode_id as a none primary_key. A workaround
+    for UniqueConstraint issue with NULL fields.
+    '''
+    # Generated column for episode_id_virtual to support unique constraint with NULL episodes
+    # Column('episode_id_virtual', Integer, FetchedValue(), nullable=False),
+    # session.bind.execute("ALTER TABLE `unittest`.`sequence` CHANGE COLUMN `episode_id_virtual`
+    # `episode_id_virtual` INT(11) GENERATED ALWAYS AS(IFNULL(`episode_id`, 0)) STORED")
+    ep_id = context.get_current_parameters()['episode_id']
+    return ep_id or 0
 
 
 class Sequence(Base):
@@ -18,7 +31,8 @@ class Sequence(Base):
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('episode_id', Integer, ForeignKey(Episode.id)),
-                      Column('episode_id_virtual', Integer, FetchedValue(), nullable=False),
+                      Column('episode_id_virtual', Integer,
+                             default=calc_episode, onupdate=calc_episode),
                       Column('shotgun_id', Integer),
 
                       Index('ix_proj_name', 'project_id', 'name', 'status'),

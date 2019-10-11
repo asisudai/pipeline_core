@@ -60,10 +60,7 @@ class Project(Base):
                 A list of Project instances matching find arguments.
 
         '''
-        query = cls.query(id=id, status=status, shotgun_id=shotgun_id)
-
-        if name:
-            query = query.filter(cls.name == name)
+        query = cls.query(name=name, id=id, status=status, shotgun_id=shotgun_id)
 
         if format:
             query = query.filter(cls.format == format)

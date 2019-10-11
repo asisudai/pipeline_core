@@ -50,14 +50,7 @@ class Episode(Base):
             Returns:
                 A list of Episode instances matching find arguments.
         '''
-        query = cls.query(id=id, status=status, shotgun_id=shotgun_id)
-
-        if project:
-            query = query.filter(cls.project_id == project.id)
-
-        if name:
-            query = query.filter(cls.name == name)
-
+        query = cls.query(project=project, name=name, id=id, status=status, shotgun_id=shotgun_id)
         return query.all()
 
     @classmethod

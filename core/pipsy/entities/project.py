@@ -33,6 +33,8 @@ class Project(Base):
                              order_by='Episode.name', cascade="all, delete-orphan")
     _sequences = relationship('Sequence', backref='project', lazy='dynamic',
                               order_by='Sequence.name', cascade="all, delete-orphan")
+    _shots = relationship('Shot', backref='project', lazy='dynamic',
+                          order_by='Shot.name', cascade="all, delete-orphan")
 
     @classmethod
     def findby_name(cls, name):

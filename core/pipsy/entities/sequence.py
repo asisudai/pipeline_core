@@ -1,9 +1,9 @@
 '''Sequence entity class'''
 
 # imports
-from sqlalchemy import (Table, Column, Integer, String, Enum, Index,
+from sqlalchemy import (Table, Column, Integer, String, Enum, Index, SmallInteger,
                         ForeignKey, UniqueConstraint)
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
 from .episode import Episode
@@ -34,6 +34,8 @@ class Sequence(Base):
                       Column('episode_id_virtual', Integer,
                              default=calc_episode, onupdate=calc_episode),
                       Column('shotgun_id', Integer),
+                      Column('cut_order', SmallInteger),
+                      Column('description', String(255)),
 
                       Index('ix_proj_name', 'project_id', 'name', 'status'),
                       Index('ix_episode_name', 'episode_id', 'name', 'status'),
@@ -45,6 +47,9 @@ class Sequence(Base):
                                        name='uq_proj_ep_basename'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
+
+    _shots = relationship('Shot', backref='sequence', lazy='dynamic',
+                          order_by='Shot.name', cascade="all, delete-orphan")
 
     @property
     def parent(self):
@@ -72,16 +77,10 @@ class Sequence(Base):
             Returns:
                 A list of Sequence instances matching find arguments.
         '''
-        query = cls.query(id=id, status=status, shotgun_id=shotgun_id)
-
-        if project:
-            query = query.filter(cls.project_id == project.id)
+        query = cls.query(project=project, name=name, id=id, status=status, shotgun_id=shotgun_id)
 
         if episode:
             query = query.filter(cls.episode_id == episode.id)
-
-        if name:
-            query = query.filter(cls.name == name)
 
         return query.all()
 

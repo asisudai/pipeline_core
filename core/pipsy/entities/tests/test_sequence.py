@@ -1,31 +1,5 @@
-import pytest
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
-from pipsy.entities import Episode, Sequence
-
-
-@pytest.fixture(scope="module")
-def sequence(project):
-    try:
-        return Sequence.find_one(project=project, name='101')
-    except NoResultFound:
-        return Sequence.create(project=project, name='101')
-
-
-@pytest.fixture(scope="module")
-def episode(project):
-    try:
-        return Episode.find_one(project=project, name='101')
-    except NoResultFound:
-        return Episode.create(project=project, name='101')
-
-
-@pytest.fixture(scope="module")
-def sequence_episode(episode):
-    try:
-        return Sequence.find_one(episode=episode, name='101')
-    except NoResultFound:
-        return Sequence.create(project=episode.project, episode=episode, name='101')
+from pipsy.entities import Sequence
 
 
 def test_cls_name():

@@ -118,11 +118,17 @@ class BaseEntity(object):
         return cls.__name__
 
     @classmethod
-    def query(cls, id=None, status=None, shotgun_id=None):
+    def query(cls, project=None, name=None, id=None, status=None, shotgun_id=None):
         '''
         Return a Query instance. Supports common queries done by entities.
         '''
         query = cls.__connect().query(cls)
+
+        if project:
+            query = query.filter(cls.project_id == project.id)
+
+        if name:
+            query = query.filter(cls.name == name)
 
         if id:
             if isinstance(id, (int, long)):

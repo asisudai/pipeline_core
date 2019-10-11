@@ -33,7 +33,10 @@ def test_find_one(episode):
     assert episode == Episode.find_one(id=episode.id)
 
 
-@pytest.mark.xfail(raises=IntegrityError)
 def test_create_unique_proj_name(episode, session):
     # Expecting IntegrityError error "Duplicate entry..."
-    Episode.create(name=episode.name, project=episode.project)
+    try:
+        Episode.create(name=episode.name, project=episode.project)
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')

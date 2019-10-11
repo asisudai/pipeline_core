@@ -1,50 +1,60 @@
-'''Episode entity class'''
+'''Sequence entity class'''
 
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index,
-                        ForeignKey, UniqueConstraint)
+                        ForeignKey, UniqueConstraint, FetchedValue)
 # from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
+from .episode import Episode
 
 
-class Episode(Base):
+class Sequence(Base):
 
-    __table__ = Table('episode', Base.metadata,
+    __table__ = Table('sequence', Base.metadata,
                       Column('id', Integer, primary_key=True),
                       Column('name', String(32), nullable=False),
                       Column('basename', String(32), nullable=False),
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
+                      Column('episode_id', Integer, ForeignKey(Episode.id)),
+                      Column('episode_id_virtual', Integer, FetchedValue(), nullable=False),
                       Column('shotgun_id', Integer),
 
                       Index('ix_proj_name', 'project_id', 'name', 'status'),
+                      Index('ix_episode_name', 'episode_id', 'name', 'status'),
                       Index('ix_sg', 'shotgun_id'),
 
-                      UniqueConstraint('project_id', 'name', name='uq_proj_name'),
-                      UniqueConstraint('project_id', 'basename', name='uq_proj_basename'),
+                      UniqueConstraint('project_id', 'episode_id_virtual', 'name',
+                                       name='uq_proj_ep_name'),
+                      UniqueConstraint('project_id', 'episode_id_virtual', 'basename',
+                                       name='uq_proj_ep_basename'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
     @classmethod
-    def find(cls, project=None, name=None, status=None, id=None, shotgun_id=None):
+    def find(cls, project=None, episode=None, name=None, status=None, id=None, shotgun_id=None):
         '''
-        Return Episode instances by query arguments
+        Return Sequence instances by query arguments
 
             Args:
                 project     (Project) : parent Project instance.
+                episode     (Episode) : parent Episode instance (optional).
                 name            (str) : Episode name.
                 status          (str) : Episode status.
                 id         (int/list) : Episode id(s).
                 shotgun_id (int/list) : Epsiode shotgun id(s).
 
             Returns:
-                A list of Episode instances matching find arguments.
+                A list of Sequence instances matching find arguments.
         '''
         query = cls.query(id=id, status=status, shotgun_id=shotgun_id)
 
         if project:
             query = query.filter(cls.project_id == project.id)
+
+        if episode:
+            query = query.filter(cls.episode_id == episode.id)
 
         if name:
             query = query.filter(cls.name == name)
@@ -52,18 +62,20 @@ class Episode(Base):
         return query.all()
 
     @classmethod
-    def create(cls, name, project, status=None, shotgun_id=None):
+    def create(cls, name, project, episode=None, status=None, shotgun_id=None):
         '''
-        Create an Episode instance.
+        Create a Sequence instance.
 
             Args:
-                name            (str) : Episode name.
+                name            (str) : Sequence name.
                 project     (Project) : parent Project instance.
-                status          (str) : Episode status.
-                shotgun_id (int/list) : Epsiode shotgun id(s).
+                episode     (Episode) : parent Episode instance.
+                status          (str) : Sequence status.
+                shotgun_id (int/list) : Sequence shotgun id(s).
 
             Returns:
-                New Episode instance.
+                New Sequence Instance.
+
         '''
         if not isinstance(project, Base):
             raise TypeError('project arg must be an Entity class. Given {!r}'
@@ -76,6 +88,7 @@ class Episode(Base):
                     basename=name,
                     status=status,
                     project_id=project.id,
+                    episode_id=getattr(episode, 'id', None),
                     shotgun_id=shotgun_id)
 
-        return super(Episode, cls).create(**data)
+        return super(Sequence, cls).create(**data)

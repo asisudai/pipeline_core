@@ -3,6 +3,7 @@
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, SmallInteger,
                         ForeignKey, UniqueConstraint)
+from sqlalchemy.ext.hybrid import hybrid_property
 # from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
@@ -19,8 +20,8 @@ class Shot(Base):
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('sequence_id', Integer, ForeignKey(Sequence.id)),
                       Column('shotgun_id', Integer),
-                      Column('cut_in', Integer),
-                      Column('cut_out', Integer),
+                      Column('cut_in', Integer, default=1001),
+                      Column('cut_out', Integer, default=1011),
                       Column('cut_order', SmallInteger),
                       Column('handles_in', SmallInteger),
                       Column('handles_out', SmallInteger),
@@ -40,6 +41,22 @@ class Shot(Base):
         Return Shot parent Sequence entity.
         '''
         return self.sequence
+
+    @hybrid_property
+    def fullname(self):
+        if self.sequence.episode:
+            return '{}_{}_{}'.format(self.sequence.episode.name, self.sequence.name, self.name)
+        return '{}_{}'.format(self.sequence.name, self.name)
+
+    @hybrid_property
+    def cut(self):
+        return (self.cut_in, self.cut_out)
+
+    @cut.setter
+    def cut(self, value):
+        assert isinstance(value, (tuple, list)), 'Must be a tuple. Given {}'.format(value)
+        self.cut_in = value[0]
+        self.cut_out = value[1]
 
     @classmethod
     def find(cls, project=None, sequence=None, name=None, basename=None, status=None,
@@ -70,7 +87,7 @@ class Shot(Base):
         return query.all()
 
     @classmethod
-    def create(cls, name, project, sequence, status=None, shotgun_id=None):
+    def create(cls, name, project, sequence, cut=None, status=None, shotgun_id=None):
         '''
         Create a Shot instance.
 
@@ -78,6 +95,7 @@ class Shot(Base):
                 name            (str) : Shot name.
                 project     (Project) : parent Project instance.
                 sequence   (Sequence) : parent Sequence instance.
+                cut           (Tuple) : (cut_in and cut_out) e.g. (1001,1002)
                 status          (str) : Shot status.
                 shotgun_id (int/list) : Shot shotgun id(s).
 
@@ -93,10 +111,10 @@ class Shot(Base):
                             .format(type(project)))
 
         if not isinstance(sequence, Base):
-            raise TypeError('episode arg must be an Entity class. Given {!r}'
+            raise TypeError('sequence arg must be an Entity class. Given {!r}'
                             .format(type(sequence)))
         elif sequence.cls_name() != 'Sequence':
-            raise TypeError('episode arg must be an Sequence class. Given {!r}'
+            raise TypeError('sequence arg must be an Sequence class. Given {!r}'
                             .format(type(sequence)))
 
         data = dict(name=name,
@@ -104,6 +122,7 @@ class Shot(Base):
                     status=status,
                     project_id=project.id,
                     sequence_id=sequence.id,
+                    cut = cut or (None, None),
                     shotgun_id=shotgun_id)
 
         return super(Shot, cls).create(**data)

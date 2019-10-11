@@ -38,10 +38,19 @@ def test_find_one(shot):
     assert shot == shot.find_one(id=shot.id)
 
 
-def test_create_unique_seq_name(shot):
+def test_create_unique_proj_seq_name(shot):
     # Expecting IntegrityError error "Duplicate entry..."
     try:
         Shot.create(name=shot.name, project=shot.sequence.project, sequence=shot.sequence)
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
+
+
+def test_cut(shot):
+    assert isinstance(shot.cut, tuple)
+    assert shot.cut == (shot.cut_in, shot.cut_out)
+
+
+def test_fullname(shot):
+    assert isinstance(shot.fullname, basestring)

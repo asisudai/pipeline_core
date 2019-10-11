@@ -65,7 +65,8 @@ def shot(sequence):
     try:
         return Shot.find_one(sequence=sequence, name='001')
     except NoResultFound:
-        return Shot.create(project=sequence.project, sequence=sequence, name='001')
+        return Shot.create(project=sequence.project, sequence=sequence,
+                           name='001', cut=(1001, 1002))
 
 
 @pytest.fixture(scope="session")
@@ -73,4 +74,5 @@ def shot_episode(sequence_episode):
     try:
         return Shot.find_one(sequence=sequence_episode, name='001')
     except NoResultFound:
-        return Shot.create(project=sequence_episode.project, sequence=sequence_episode, name='001')
+        return Shot.create(project=sequence_episode.project, sequence=sequence_episode,
+                           name='001', cut=(1001, 1002))

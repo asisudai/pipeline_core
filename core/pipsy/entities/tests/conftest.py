@@ -4,7 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import pipsy.db
 from pipsy.db import connect_database, build_engine_url
 from pipsy.entities.core import Base
-from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task)
+from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User)
 
 
 @pytest.fixture(scope="session")
@@ -114,3 +114,13 @@ def task_asset(asset):
     except NoResultFound:
         return Task.create(project=asset.project, entity=asset,
                            name='build geo', stage='modeling')
+
+
+@pytest.fixture(scope="session")
+def user(session, create_db):
+    try:
+        return User.find_one(first_name='unittest', last_name='unittest',
+                             email='unittest@unittest.com', login='unittest')
+    except NoResultFound:
+        return User.create(first_name='unittest', last_name='unittest',
+                           email='unittest@unittest.com', login='unittest')

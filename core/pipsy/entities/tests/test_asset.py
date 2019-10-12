@@ -35,7 +35,7 @@ def test_findby_name(asset):
 def test_create_unique_proj_name(asset):
     # Expecting IntegrityError error "Duplicate entry..."
     try:
-        Asset.create(name=asset.name, project=asset.project, type=asset.type)
+        Asset.create(name=asset.name, project=asset.project, kind=asset.kind)
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')

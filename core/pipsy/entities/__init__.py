@@ -5,4 +5,5 @@ from . episode import Episode
 from . sequence import Sequence
 from . shot import Shot
 from . asset import Asset
+from . task import Task
 from . format import Format

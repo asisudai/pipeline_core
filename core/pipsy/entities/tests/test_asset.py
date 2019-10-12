@@ -32,6 +32,10 @@ def test_findby_name(asset):
                                    name=asset.name)
 
 
+def test_find_library(asset_library):
+    assert asset_library in Asset.find(project=asset_library.project, library=True)
+
+
 def test_create_unique_proj_name(asset):
     # Expecting IntegrityError error "Duplicate entry..."
     try:

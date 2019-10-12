@@ -4,7 +4,8 @@ from sqlalchemy.orm.exc import NoResultFound
 import pipsy.db
 from pipsy.db import connect_database, build_engine_url
 from pipsy.entities.core import Base
-from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User)
+from pipsy.entities import (Project, Episode, Sequence, Shot, Asset,
+                            Task, UserTask, User)
 
 
 @pytest.fixture(scope="session")
@@ -88,6 +89,24 @@ def asset(project):
 
 
 @pytest.fixture(scope="session")
+def asset_library(project):
+    try:
+        return Asset.find_one(project=project, name='camera', kind='camera', library=True)
+    except NoResultFound:
+        return Asset.create(project=project, name='camera', kind='camera', library=True)
+
+
+@pytest.fixture(scope="session")
+def user(session, create_db):
+    try:
+        return User.find_one(first_name='unittest', last_name='unittest',
+                             email='unittest@unittest.com', login='unittest')
+    except NoResultFound:
+        return User.create(first_name='unittest', last_name='unittest',
+                           email='unittest@unittest.com', login='unittest')
+
+
+@pytest.fixture(scope="session")
 def task_shot(shot):
     try:
         return Task.find_one(project=shot.project, entity=shot,
@@ -118,10 +137,8 @@ def task_asset(asset):
 
 
 @pytest.fixture(scope="session")
-def user(session, create_db):
+def taskuser_shot(task_shot, user):
     try:
-        return User.find_one(first_name='unittest', last_name='unittest',
-                             email='unittest@unittest.com', login='unittest')
+        return UserTask.find_one(task=task_shot, user=user)
     except NoResultFound:
-        return User.create(first_name='unittest', last_name='unittest',
-                           email='unittest@unittest.com', login='unittest')
+        return UserTask.create(task=task_shot, user=user)

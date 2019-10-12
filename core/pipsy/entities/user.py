@@ -3,7 +3,7 @@
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, UniqueConstraint)
 from sqlalchemy.ext.hybrid import hybrid_property
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship
 from .core import Base
 
 
@@ -29,6 +29,9 @@ class User(Base):
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
+    _usertasks = relationship('UserTask', backref='user', lazy='dynamic',
+                              cascade="all, delete-orphan")
+
     def __repr__(self):
         return "{cls}(login='{login}', id={id})".format(cls=self.__class__.__name__,
                                                         login=self.login,
@@ -44,6 +47,11 @@ class User(Base):
     @fullname.expression
     def fullname(cls):
         return (cls.first_name + " " + cls.last_name)
+
+    @property
+    def tasks(self):
+        from . task import Task
+        return Task.find(user=self)
 
     @classmethod
     def find(cls, first_name=None, last_name=None, fullname=None, login=None,

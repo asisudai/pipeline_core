@@ -20,6 +20,7 @@ class Asset(Base):
                       Column('shotgun_id', Integer, nullable=True),
                       Column('kind', Enum('char', 'prop', 'vhcl', 'env', 'fx', 'matte',
                                           'camera', 'light'), nullable=False),
+                      # TODO: use library column e.g. AssetLibrary
                       Column('library', Boolean, default=False, nullable=True),
                       Column('description', String(255)),
 
@@ -73,6 +74,9 @@ class Asset(Base):
 
         if basename:
             query = query.filter(cls.basename == basename)
+
+        if library is not None:
+            query = query.filter(cls.library == library)
 
         return query.all()
 

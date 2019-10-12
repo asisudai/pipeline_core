@@ -35,6 +35,10 @@ class Project(Base):
                               order_by='Sequence.name', cascade="all, delete-orphan")
     _shots = relationship('Shot', backref='project', lazy='dynamic',
                           order_by='Shot.name', cascade="all, delete-orphan")
+    _assets = relationship('Asset', backref='project', lazy='dynamic',
+                           order_by='Asset.name', cascade="all, delete-orphan")
+    _tasks = relationship('Task', backref='project', lazy='dynamic',
+                          order_by='Task.id', cascade="all, delete-orphan")
 
     @classmethod
     def findby_name(cls, name):
@@ -60,10 +64,7 @@ class Project(Base):
                 A list of Project instances matching find arguments.
 
         '''
-        query = cls.query(id=id, status=status, shotgun_id=shotgun_id)
-
-        if name:
-            query = query.filter(cls.name == name)
+        query = cls.query(name=name, id=id, status=status, shotgun_id=shotgun_id)
 
         if format:
             query = query.filter(cls.format == format)

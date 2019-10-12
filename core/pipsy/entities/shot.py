@@ -4,7 +4,7 @@
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, SmallInteger,
                         ForeignKey, UniqueConstraint)
 from sqlalchemy.ext.hybrid import hybrid_property
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
 from .sequence import Sequence
@@ -32,8 +32,12 @@ class Shot(Base):
                       Index('ix_sg', 'shotgun_id'),
 
                       UniqueConstraint('sequence_id', 'name', name='uq_seq_name'),
+                      UniqueConstraint('sequence_id', 'basename', name='uq_seq_basename'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
+
+    _tasks = relationship('Task', backref='shot', lazy='dynamic',
+                          order_by='Task.name', cascade="all, delete-orphan")
 
     @property
     def parent(self):
@@ -105,18 +109,12 @@ class Shot(Base):
                 New Shot Instance.
 
         '''
-        if not isinstance(project, Base):
-            raise TypeError('project arg must be an Entity class. Given {!r}'
-                            .format(type(project)))
-        elif project.cls_name() != 'Project':
-            raise TypeError('project arg must be an Project class. Given {!r}'
+        if not isinstance(project, Base) or not project.cls_name() == 'Project':
+            raise TypeError('project arg expected Project entity. Given {!r}'
                             .format(type(project)))
 
-        if not isinstance(sequence, Base):
-            raise TypeError('sequence arg must be an Entity class. Given {!r}'
-                            .format(type(sequence)))
-        elif sequence.cls_name() != 'Sequence':
-            raise TypeError('sequence arg must be an Sequence class. Given {!r}'
+        if not isinstance(sequence, Base) or not sequence.cls_name() == 'Sequence':
+            raise TypeError('sequence arg expected Project entity. Given {!r}'
                             .format(type(sequence)))
 
         data = dict(name=name,

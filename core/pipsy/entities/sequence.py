@@ -51,6 +51,8 @@ class Sequence(Base):
 
     _shots = relationship('Shot', backref='sequence', lazy='dynamic',
                           order_by='Shot.name', cascade="all, delete-orphan")
+    _tasks = relationship('Task', backref='sequence', lazy='dynamic',
+                          order_by='Task.name', cascade="all, delete-orphan")
 
     @property
     def parent(self):
@@ -73,7 +75,7 @@ class Sequence(Base):
         return '{}'.format(self.name)
 
     @classmethod
-    def find(cls, project=None, episode=None, name=None, status=None, id=None, shotgun_id=None):
+    def find(cls, project=None, episode=False, name=None, status=None, id=None, shotgun_id=None):
         '''
         Return Sequence instances by query arguments
 
@@ -111,20 +113,14 @@ class Sequence(Base):
                 New Sequence Instance.
 
         '''
-        if not isinstance(project, Base):
-            raise TypeError('project arg must be an Entity class. Given {!r}'
-                            .format(type(project)))
-        elif project.cls_name() != 'Project':
-            raise TypeError('project arg must be an Project class. Given {!r}'
+        if not isinstance(project, Base) or not project.cls_name() == 'Project':
+            raise TypeError('project arg expected Project entity. Given {!r}'
                             .format(type(project)))
 
         if episode:
-            if not isinstance(episode, Base):
-                raise TypeError('episode arg must be an Entity class. Given {!r}'
-                                .format(type(project)))
-            elif episode.cls_name() != 'Episode':
-                raise TypeError('episode arg must be an Episode class. Given {!r}'
-                                .format(type(project)))
+            if not isinstance(episode, Base) or not episode.cls_name() == 'Episode':
+                raise TypeError('episode arg expected Episode entity. Given {!r}'
+                                .format(type(episode)))
 
         data = dict(name=name,
                     basename=name,

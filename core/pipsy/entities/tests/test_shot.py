@@ -38,6 +38,12 @@ def test_find_one(shot):
     assert shot == shot.find_one(id=shot.id)
 
 
+def test_findby_name(shot):
+    assert shot == Shot.find_one(project=shot.project,
+                                 sequence=shot.sequence,
+                                 name=shot.name)
+
+
 def test_create_unique_proj_seq_name(shot):
     # Expecting IntegrityError error "Duplicate entry..."
     try:

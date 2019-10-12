@@ -31,6 +31,18 @@ def test_find_one(sequence):
     assert sequence == Sequence.find_one(id=sequence.id)
 
 
+def test_findby_name(sequence):
+    assert sequence == Sequence.find_one(project=sequence.project,
+                                         episode=sequence.episode,
+                                         name=sequence.name)
+
+
+def test_findby_name_ep(sequence_episode):
+    assert sequence_episode == Sequence.find_one(project=sequence_episode.project,
+                                                 episode=sequence_episode.episode,
+                                                 name=sequence_episode.name)
+
+
 def test_episode_id_virtual(sequence):
     assert sequence.episode_id_virtual == (sequence.episode_id or 0)
 

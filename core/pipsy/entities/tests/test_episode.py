@@ -27,6 +27,11 @@ def test_find_one(episode):
     assert episode == Episode.find_one(id=episode.id)
 
 
+def test_findby_name(episode):
+    assert episode == Episode.find_one(project=episode.project,
+                                       name=episode.name)
+
+
 def test_create_unique_proj_name(episode, session):
     # Expecting IntegrityError error "Duplicate entry..."
     try:

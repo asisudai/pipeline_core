@@ -73,7 +73,7 @@ class Sequence(Base):
         return '{}'.format(self.name)
 
     @classmethod
-    def find(cls, project=None, episode=None, name=None, status=None, id=None, shotgun_id=None):
+    def find(cls, project=None, episode=False, name=None, status=None, id=None, shotgun_id=None):
         '''
         Return Sequence instances by query arguments
 

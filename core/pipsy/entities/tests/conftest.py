@@ -55,9 +55,9 @@ def sequence(project):
 @pytest.fixture(scope="session")
 def sequence_episode(episode):
     try:
-        return Sequence.find_one(episode=episode, name='101')
+        return Sequence.find_one(episode=episode, name='102')
     except NoResultFound:
-        return Sequence.create(project=episode.project, episode=episode, name='101')
+        return Sequence.create(project=episode.project, episode=episode, name='102')
 
 
 @pytest.fixture(scope="session")

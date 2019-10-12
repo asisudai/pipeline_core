@@ -2,7 +2,7 @@
 
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, ForeignKey,
-                        UniqueConstraint, Boolean, DateTime)
+                        UniqueConstraint, DateTime)
 # from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
@@ -42,7 +42,8 @@ class Task(Base):
     @property
     def parent(self):
         '''
-        Return Task parent Shot, Sequence or Asset entity.
+        Return Task parent.
+        Parent could be Sequence, Shot or Asset entity.
         '''
         if self.shot_id:
             return self.shot
@@ -123,11 +124,8 @@ class Task(Base):
                 New Task Instance.
 
         '''
-        if not isinstance(project, Base):
-            raise TypeError('project arg must be an Entity class. Given {!r}'
-                            .format(type(project)))
-        elif project.cls_name() != 'Project':
-            raise TypeError('project arg must be an Project class. Given {!r}'
+        if not isinstance(project, Base) or not project.cls_name() == 'Project':
+            raise TypeError('project arg expected Project entity. Given {!r}'
                             .format(type(project)))
 
         (sequence, shot, asset) = (None, None, None)
@@ -156,3 +154,9 @@ class Task(Base):
                     shotgun_id=shotgun_id)
 
         return super(Task, cls).create(**data)
+
+    @staticmethod
+    def validate_arg(entity, cls_name):
+
+        if not isinstance(entity, Base) or not entity.cls_name() == cls_name:
+            raise TypeError('Expected {!r} entity. Given {!r}'.format(cls_name, type(entity)))

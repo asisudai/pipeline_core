@@ -113,20 +113,14 @@ class Sequence(Base):
                 New Sequence Instance.
 
         '''
-        if not isinstance(project, Base):
-            raise TypeError('project arg must be an Entity class. Given {!r}'
-                            .format(type(project)))
-        elif project.cls_name() != 'Project':
-            raise TypeError('project arg must be an Project class. Given {!r}'
+        if not isinstance(project, Base) or not project.cls_name() == 'Project':
+            raise TypeError('project arg expected Project entity. Given {!r}'
                             .format(type(project)))
 
         if episode:
-            if not isinstance(episode, Base):
-                raise TypeError('episode arg must be an Entity class. Given {!r}'
-                                .format(type(project)))
-            elif episode.cls_name() != 'Episode':
-                raise TypeError('episode arg must be an Episode class. Given {!r}'
-                                .format(type(project)))
+            if not isinstance(episode, Base) or not episode.cls_name() == 'Episode':
+                raise TypeError('episode arg expected Episode entity. Given {!r}'
+                                .format(type(episode)))
 
         data = dict(name=name,
                     basename=name,

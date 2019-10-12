@@ -92,12 +92,9 @@ class Asset(Base):
                 New Asset Instance.
 
         '''
-        if not isinstance(project, Base):
-            raise TypeError('project arg must be an Entity class. Given {!r}'
-                            .format(kind(project)))
-        elif project.cls_name() != 'Project':
-            raise TypeError('project arg must be an Project class. Given {!r}'
-                            .format(kind(project)))
+        if not isinstance(project, Base) or not project.cls_name() == 'Project':
+            raise TypeError('project arg expected Project entity. Given {!r}'
+                            .format(type(project)))
 
         data = dict(name=name,
                     basename=name,

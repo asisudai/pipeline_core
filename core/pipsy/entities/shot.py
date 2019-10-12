@@ -109,18 +109,12 @@ class Shot(Base):
                 New Shot Instance.
 
         '''
-        if not isinstance(project, Base):
-            raise TypeError('project arg must be an Entity class. Given {!r}'
-                            .format(type(project)))
-        elif project.cls_name() != 'Project':
-            raise TypeError('project arg must be an Project class. Given {!r}'
+        if not isinstance(project, Base) or not project.cls_name() == 'Project':
+            raise TypeError('project arg expected Project entity. Given {!r}'
                             .format(type(project)))
 
-        if not isinstance(sequence, Base):
-            raise TypeError('sequence arg must be an Entity class. Given {!r}'
-                            .format(type(sequence)))
-        elif sequence.cls_name() != 'Sequence':
-            raise TypeError('sequence arg must be an Sequence class. Given {!r}'
+        if not isinstance(sequence, Base) or not sequence.cls_name() == 'Sequence':
+            raise TypeError('sequence arg expected Project entity. Given {!r}'
                             .format(type(sequence)))
 
         data = dict(name=name,

@@ -1,3 +1,4 @@
+import pytest
 from sqlalchemy.exc import IntegrityError
 from pipsy.entities import Task
 
@@ -40,7 +41,7 @@ def test_findby_name(task_asset):
                                        name=task_asset.name)
 
 
-def test_create_unique_proj_name(task_asset):
+def test_create_asset_unique_proj_name(task_asset):
     # Expecting IntegrityError error "Duplicate entry..."
     try:
         Task.create(project=task_asset.project, entity=task_asset.parent,
@@ -48,3 +49,33 @@ def test_create_unique_proj_name(task_asset):
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
+
+
+def test_create_sequence_unique_proj_name(task_sequence):
+    # Expecting IntegrityError error "Duplicate entry..."
+    try:
+        Task.create(project=task_sequence.project, entity=task_sequence.parent,
+                    name=task_sequence.name, stage=task_sequence.stage)
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
+
+
+def test_create_shot_unique_proj_name(task_shot):
+    # Expecting IntegrityError error "Duplicate entry..."
+    try:
+        Task.create(project=task_shot.project, entity=task_shot.parent,
+                    name=task_shot.name, stage=task_shot.stage)
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
+
+
+def test_create_bad_arguments(task_shot):
+    # Expecting TypeError error, wrong argument/entity given.
+    try:
+        Task.create(project=task_shot.shot, entity=task_shot.parent,
+                    name=task_shot.name, stage=task_shot.stage)
+    except TypeError:
+        return
+    raise AssertionError('Expected TypeError due to wrong arg type')

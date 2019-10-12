@@ -4,7 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import pipsy.db
 from pipsy.db import connect_database, build_engine_url
 from pipsy.entities.core import Base
-from pipsy.entities import Project, Episode, Sequence, Shot
+from pipsy.entities import (Project, Episode, Sequence, Shot, Asset)
 
 
 @pytest.fixture(scope="session")
@@ -76,3 +76,11 @@ def shot_episode(sequence_episode):
     except NoResultFound:
         return Shot.create(project=sequence_episode.project, sequence=sequence_episode,
                            name='001', cut=(1001, 1002))
+
+
+@pytest.fixture(scope="session")
+def asset(project):
+    try:
+        return Asset.find_one(project=project, name='cupcake', type='prop')
+    except NoResultFound:
+        return Asset.create(project=project, name='cupcake', type='prop')

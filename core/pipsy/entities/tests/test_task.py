@@ -44,7 +44,7 @@ def test_create_unique_proj_name(task_asset):
     # Expecting IntegrityError error "Duplicate entry..."
     try:
         Task.create(project=task_asset.project, entity=task_asset.parent,
-                      name=task_asset.name, stage=task_asset.stage)
+                    name=task_asset.name, stage=task_asset.stage)
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')

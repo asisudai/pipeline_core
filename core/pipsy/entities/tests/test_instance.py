@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from pipsy.core.pythonx import string_types
 from pipsy.entities import Instance
 
 
@@ -25,7 +26,7 @@ def instance_sequence(sequence, asset):
 
 
 def test_fullname(instance_shot):
-    assert isinstance(instance_shot.fullname, basestring)
+    assert isinstance(instance_shot.fullname, string_types)
 
 
 def test_cls_name():

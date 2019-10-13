@@ -8,8 +8,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.util import identity_key
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.exc import DataError, IntegrityError
-from pipsy import db
-from pipsy.core import logging
+from .. import db
+from ..core.pythonx import string_types, int
+from ..core import logging
 
 LOG = logging.getLogger(__name__, level=logging.INFO)
 
@@ -152,7 +153,7 @@ class BaseEntity(object):
             query = query.filter(cls.name == name)
 
         if id:
-            if isinstance(id, (int, long)):
+            if isinstance(id, int):
                 query = query.filter(cls.id == id)
             elif isinstance(id, (list, tuple)):
                 query = query.filter(cls.id.in_(id))
@@ -168,7 +169,7 @@ class BaseEntity(object):
                 raise ValueError('Invalid argument given {}'.format(id))
 
         if shotgun_id:
-            if isinstance(shotgun_id, (int, long)):
+            if isinstance(shotgun_id, int):
                 query = query.filter(cls.shotgun_id == shotgun_id)
             elif isinstance(shotgun_id, (list, tuple)):
                 query = query.filter(cls.shotgun_id.in_(shotgun_id))

@@ -4,6 +4,7 @@
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, ForeignKey,
                         UniqueConstraint, Boolean)
 from sqlalchemy.orm import relationship
+from ..core.pythonx import string_types
 from .core import Base
 from .project import Project
 
@@ -69,7 +70,7 @@ class Asset(Base):
         if kind:
             if isinstance(kind, (list, tuple)):
                 query = query.filter(cls.kind.in_(kind))
-            elif isinstance(kind, basestring):
+            elif isinstance(kind, string_types):
                 query = query.filter(cls.kind == kind)
             else:
                 raise ValueError('Invalid argument given {}'.format(kind))

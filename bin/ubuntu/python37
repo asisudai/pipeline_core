@@ -1,12 +1,12 @@
 #!/bin/bash
-# Python 2.7
+# Python 3.7
 # Includes pipeline's environments and libraries.
 
 # Pipeline Repository:
 export PIPE_REPO="/home/asi/git/pipeline_core"
 
 # Python:
-export PYTHONPATH=${PIPE_REPO}/core:${PIPE_REPO}/python27/ubuntu:${PYTHONPATH}
+export PYTHONPATH=${PIPE_REPO}/core:${PIPE_REPO}/python37/ubuntu:${PYTHONPATH}
 export PYTHONDONTWRITEBYTECODE=1 # Turn off generation of pyc files
 
 # Development:
@@ -25,7 +25,7 @@ do
 
         # --DEV:
         export SCL_ISDEV="True"
-        export PYTHONPATH=${PIPE_DEV_REPO}/core:${PIPE_DEV_REPO}/python27/ubuntu:${PYTHONPATH}
+        export PYTHONPATH=${PIPE_DEV_REPO}/core:${PIPE_DEV_REPO}/python37/ubuntu:${PYTHONPATH}
         echo -e "\e[33mRunning using --dev environment: ${PIPE_DEV_REPO}\e[0m"
 
     else
@@ -35,4 +35,4 @@ done
 
 
 # Run:
-/usr/bin/python2.7 "${paramaters[@]}"
+/usr/bin/python3.7 "${paramaters[@]}"

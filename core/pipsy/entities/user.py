@@ -171,14 +171,7 @@ class UserProject(Base):
                 user            (User): User to assignment.
                 project (Project/list): Project(s) to assign.
         '''
-
-        if not isinstance(projects, (list, set, tuple)):
-            raise TypeError('projects arg must be a list of Project instances. Given {!r}'
-                            .format(type(projects)))
-
-        for project in projects:
-            cls.assert_isinstance(project, 'Project')
-
+        cls.assert_isinstances(projects, 'Project')
         cls.assert_isinstance(user, 'User')
 
         uprojects = UserProject.find(user=user)

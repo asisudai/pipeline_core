@@ -35,3 +35,9 @@ def test_task_user_assignment(project, user):
     assert project in user.projects
     user.projects -= project
     assert project not in user.projects
+    user.projects = [project]
+    assert project in user.projects
+
+
+def test_assign_projects_to_user(user, project):
+    UserProject.assign_projects_to_user(user, [project])

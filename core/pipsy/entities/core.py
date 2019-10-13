@@ -191,7 +191,8 @@ class BaseEntity(object):
         for entity in entities:
             if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
                 raise EntityTypeError('Expected {!r} entity. Given {!r}'
-                                    .format(expected_cls, type(entity)))
+                                      .format(expected_cls, type(entity)))
+
     @staticmethod
     def assert_isinstance(entity, expected_cls):
         '''Helper assertion to validate given object is expected Entity class'''

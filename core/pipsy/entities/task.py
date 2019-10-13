@@ -75,8 +75,8 @@ class Task(Base):
                 name            (str) : Task name.
                 stage           (str) : Task stage.
                 user            (user): User assignment.
-                start_date  (datetime) : start date. defaults to None.
-                end_date    (datetime) : end date. defaults to None.
+                start_date  (datetime): start date. defaults to None.
+                end_date    (datetime): end date. defaults to None.
                 status          (str) : Task status.
                 id         (int/list) : Task id(s).
                 shotgun_id (int/list) : Task shotgun id(s).

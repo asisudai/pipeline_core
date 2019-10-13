@@ -113,14 +113,10 @@ class Sequence(Base):
                 New Sequence Instance.
 
         '''
-        if not isinstance(project, Base) or not project.cls_name() == 'Project':
-            raise TypeError('project arg expected Project entity. Given {!r}'
-                            .format(type(project)))
+        cls.assert_isinstance(project, 'Project')
 
         if episode:
-            if not isinstance(episode, Base) or not episode.cls_name() == 'Episode':
-                raise TypeError('episode arg expected Episode entity. Given {!r}'
-                                .format(type(episode)))
+            cls.assert_isinstance(episode, 'Episode')
 
         data = dict(name=name,
                     basename=name,

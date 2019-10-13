@@ -109,13 +109,8 @@ class Shot(Base):
                 New Shot Instance.
 
         '''
-        if not isinstance(project, Base) or not project.cls_name() == 'Project':
-            raise TypeError('project arg expected Project entity. Given {!r}'
-                            .format(type(project)))
-
-        if not isinstance(sequence, Base) or not sequence.cls_name() == 'Sequence':
-            raise TypeError('sequence arg expected Project entity. Given {!r}'
-                            .format(type(sequence)))
+        cls.assert_isinstance(project, 'Project')
+        cls.assert_isinstance(sequence, 'Sequence')
 
         data = dict(name=name,
                     basename=name,

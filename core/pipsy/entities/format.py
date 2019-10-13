@@ -124,8 +124,8 @@ class Format(Base):
                     status          = status,
                     project_id      = project_id,
                     episode_id      = episode_id,
-                    # sequence_id     = sequence_id,
-                    # shot_id         = shot_id,
+                    sequence_id     = sequence_id,
+                    shot_id         = shot_id,
                     resolution_high_width  = high_res[0] if high_res else None,
                     resolution_high_height = high_res[1] if high_res else None,
                     resolution_mid_width   = mid_res[0] if mid_res else None,
@@ -134,10 +134,5 @@ class Format(Base):
                     resolution_low_height  = low_res[1] if low_res else None,
                     resolution_aspect      = aspect if aspect else None,
                     fps                    = fps if fps else None,
-                    # res_mid_height  = mid_res[1] if mid_res else None,
-                    # res_low_width   = low_res[0] if low_res else None,
-                    # res_low_height  = low_res[1] if low_res else None,
-                    # handles_in      = handles[0] if handles else None,
-                    # handles_out     = handles[1] if handles else None,
                     )
         return super(Format, cls).create(**data)

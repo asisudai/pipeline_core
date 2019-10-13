@@ -3,12 +3,13 @@
 # imports
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, ForeignKey,
                         UniqueConstraint, DateTime)
-# from sqlalchemy.orm import relationship
-from .core import Base
+from sqlalchemy.orm import relationship
+from .core import Base, ResultSet
 from .project import Project
 from .sequence import Sequence
 from .shot import Shot
 from .asset import Asset
+from .user import User
 
 
 class Task(Base):
@@ -39,6 +40,9 @@ class Task(Base):
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
+    _usertasks = relationship('UserTask', backref='task', lazy='dynamic',
+                              cascade="all, delete-orphan")
+
     @property
     def parent(self):
         '''
@@ -52,6 +56,27 @@ class Task(Base):
         elif self.asset_id:
             return self.asset
 
+    @property
+    def users(self):
+        '''Returns Users instances assigned to Task'''
+        query = User.query()
+        query = query.join(UserTask).filter(UserTask.task_id == self.id)
+        return ResultSet(query.all())
+
+    @users.setter
+    def users(self, users):
+        '''
+        Assign Users to Task.
+
+            Supports operator assignment:
+                self.users = []
+                self.users += user
+                self.users -= user
+                self.users += [user]
+                self.users -= [user]
+        '''
+        UserTask.assign_users_to_task(task=self, users=users)
+
     @classmethod
     def find(cls, project=None, entity=None, name=None, stage=None, status=None,
              user=None, start_date=None, end_date=None, id=None, shotgun_id=None):
@@ -63,9 +88,9 @@ class Task(Base):
                 entity       (Entity) : parent Shot, Sequence or Asset instance.
                 name            (str) : Task name.
                 stage           (str) : Task stage.
-                user            (user): User assignment.
-                start_date  (datetime) : start date. defaults to None.
-                end_date    (datetime) : end date. defaults to None.
+                user           (user) : User assignment.
+                start_date (datetime) : start date. defaults to None.
+                end_date   (datetime) : end date. defaults to None.
                 status          (str) : Task status.
                 id         (int/list) : Task id(s).
                 shotgun_id (int/list) : Task shotgun id(s).
@@ -92,7 +117,7 @@ class Task(Base):
                 query = query.filter(field == entity.id)
 
         if user:
-            raise NotImplementedError('we need to implement this one')
+            query = query.join(UserTask).filter(UserTask.user_id == user.id)
 
         if stage:
             query = query.filter(cls.stage == stage)
@@ -124,9 +149,7 @@ class Task(Base):
                 New Task Instance.
 
         '''
-        if not isinstance(project, Base) or not project.cls_name() == 'Project':
-            raise TypeError('project arg expected Project entity. Given {!r}'
-                            .format(type(project)))
+        cls.assert_isinstance(project, 'Project')
 
         (sequence, shot, asset) = (None, None, None)
         if not isinstance(entity, Base):
@@ -155,8 +178,89 @@ class Task(Base):
 
         return super(Task, cls).create(**data)
 
-    @staticmethod
-    def validate_arg(entity, cls_name):
 
-        if not isinstance(entity, Base) or not entity.cls_name() == cls_name:
-            raise TypeError('Expected {!r} entity. Given {!r}'.format(cls_name, type(entity)))
+class UserTask(Base):
+
+    __table__ = Table('user_task', Base.metadata,
+                      Column('user_id', Integer, ForeignKey(User.id),
+                             primary_key=True, autoincrement=False),
+                      Column('task_id', Integer, ForeignKey(Task.id),
+                             primary_key=True, autoincrement=False),
+
+                      Index('ix_user_id', 'user_id'),
+                      Index('ix_task_id', 'task_id'),
+
+                      UniqueConstraint('user_id', 'task_id', name='uq_user_task'),
+                      )
+
+    def __repr__(self):
+        return "{cls}(user='{user}', task='{task}')".format(cls =self.__class__.__name__,
+                                                            task=self.task_id,
+                                                            user=self.user_id)
+
+    @classmethod
+    def assign_users_to_task(cls, task, users):
+        '''
+        Assign Users to Task.
+
+            Args:
+                task       (Task) : Task to assignment.
+                users (User/list) : User(s) to assign.
+        '''
+        cls.assert_isinstances(users, 'User')
+        cls.assert_isinstance(task, 'Task')
+
+        utasks = cls.find(task=task)
+
+        with task.session_context() as session:
+
+            for utask in utasks:
+                if utask.user_id not in [u.id for u in users]:
+                    session.delete(utask)
+
+            for user in users:
+                if user.id not in [u.user_id for u in utasks]:
+                    new = UserTask(user_id=user.id, task_id=task.id)
+                    session.add(new)
+
+    @classmethod
+    def find(cls, user=None, task=None):
+        '''
+        Return UserTask instances by query arguments
+
+            Args:
+                user     (User) : User instance.
+                task     (Task) : Task instance.
+
+            Returns:
+                A list of UserTask instances matching find arguments.
+        '''
+        query = cls.query()
+
+        if user:
+            query = query.filter(cls.user_id == user.id)
+
+        if task:
+            query = query.filter(cls.task_id == task.id)
+
+        return query.all()
+
+    @classmethod
+    def create(cls, user, task):
+        '''
+        Create a Task instance.
+
+            Args:
+                user     (User) : User instance.
+                task     (Task) : Task instance.
+
+            Returns:
+                New UserTask Instance.
+        '''
+        cls.assert_isinstance(user, 'User')
+        cls.assert_isinstance(task, 'Task')
+
+        data = dict(user_id = user.id,
+                    task_id = task.id)
+
+        return super(UserTask, cls).create(**data)

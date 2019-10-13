@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from pipsy.entities import User
 
 
@@ -28,3 +29,23 @@ def test_find_one(user):
 def test_findby_name(user):
     assert user == User.find_one(first_name=user.first_name,
                                  last_name=user.last_name)
+
+
+def test_create_uq_login(user):
+    # Expecting IntegrityError error "Duplicate entry..."
+    try:
+        return User.create(first_name='random', last_name='random',
+                           email='random@unittest.com', login=user.login)
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
+
+
+def test_create_uq_email(user):
+    # Expecting IntegrityError error "Duplicate entry..."
+    try:
+        return User.create(first_name='random', last_name='random',
+                           email=user.email, login='random')
+    except IntegrityError:
+        return
+    raise AssertionError('Expected IntegrityError due to "Duplicate entry"')

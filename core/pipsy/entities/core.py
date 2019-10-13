@@ -2,11 +2,12 @@
 '''Entities Base Class'''
 
 # imports
-from sqlalchemy import inspect, MetaData, DateTime, String, JSON
+from contextlib import contextmanager
+from sqlalchemy import inspect, MetaData, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.util import identity_key
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-from sqlalchemy.exc import DataError, IntegrityError, InvalidRequestError
+from sqlalchemy.exc import DataError, IntegrityError
 from pipsy import db
 from pipsy.core import logging
 
@@ -53,6 +54,25 @@ class BaseEntity(object):
                 value = getattr(self, col.name)
 
             yield(col.name, value)
+
+    @contextmanager
+    def session_context(self):
+        '''Return a entity's session context'''
+        session = inspect(self).session
+        assert session, '{} is not attached to any session'.format(self)
+        session.begin(subtransactions=True)
+
+        try:
+            yield session
+            session.commit()
+        except (DataError, IntegrityError) as err:
+            LOG.fatal('{} {}'.format(err.__class__.__name__, err))
+            LOG.fatal('{} {}'.format(err.statement, err.params))
+            session.rollback()
+            raise
+        except Exception:
+            session.rollback()
+            raise
 
     @classmethod
     def find(cls, **kwargs):
@@ -125,6 +145,7 @@ class BaseEntity(object):
         query = cls.__connect().query(cls)
 
         if project:
+            cls.assert_isinstance(project, 'Project')
             query = query.filter(cls.project_id == project.id)
 
         if name:
@@ -165,6 +186,21 @@ class BaseEntity(object):
         return db.connect_database(rdbms=db.RDBMS, host=db.HOST, port=db.PORT, user=db.USER,
                                    password=db.PASSWD, database=db.DATABASE)
 
+    @staticmethod
+    def assert_isinstances(entities, expected_cls):
+        '''Helper assertion to validate given object is expected list of Entity class'''
+        for entity in entities:
+            if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
+                raise EntityTypeError('Expected {!r} entity. Given {!r}'
+                                      .format(expected_cls, type(entity)))
+
+    @staticmethod
+    def assert_isinstance(entity, expected_cls):
+        '''Helper assertion to validate given object is expected Entity class'''
+        if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
+            raise EntityTypeError('Expected {!r} entity. Given {!r}'
+                                  .format(expected_cls, type(entity)))
+
 
 # Register BaseEntity with sqlAlchemy declarative base.
 metadata = MetaData()
@@ -178,3 +214,41 @@ class AttributeDict(dict):
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
+
+
+class ResultSet(set):
+    '''
+    Set with extended support for operators.
+        s = ResultSet()
+        s = []
+        s += 1
+        s -= [1]
+        s == [3]
+        s != [4]
+    '''
+    def __iadd__(self, other):
+        if isinstance(other, list):
+            self.update(other)
+        else:
+            self.add(other)
+        return self
+
+    def __isub__(self, other):
+        if isinstance(other, list):
+            self.difference_update(other)
+        else:
+            self.discard(other)
+        return self
+
+    def __eq__(self, other):
+        if isinstance(other, list):
+            return list(self) == other
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class EntityTypeError(TypeError):
+    pass

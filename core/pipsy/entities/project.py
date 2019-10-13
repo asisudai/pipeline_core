@@ -2,7 +2,7 @@
 '''Project entity class'''
 
 # imports
-from sqlalchemy import Table, Column, Integer, String, Enum, Index, UniqueConstraint
+from sqlalchemy import (Table, Column, Integer, String, Enum, Index, UniqueConstraint)
 from sqlalchemy.orm import relationship
 from .core import Base
 
@@ -39,6 +39,8 @@ class Project(Base):
                            order_by='Asset.name', cascade="all, delete-orphan")
     _tasks = relationship('Task', backref='project', lazy='dynamic',
                           order_by='Task.id', cascade="all, delete-orphan")
+    _userprojects = relationship('UserProject', backref='project', lazy='dynamic',
+                                 cascade="all, delete-orphan")
 
     @classmethod
     def findby_name(cls, name):

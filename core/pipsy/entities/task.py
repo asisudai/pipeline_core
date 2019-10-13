@@ -4,7 +4,7 @@
 from sqlalchemy import (Table, Column, Integer, String, Enum, Index, ForeignKey,
                         UniqueConstraint, DateTime)
 from sqlalchemy.orm import relationship
-from .core import Base
+from .core import Base, ResultSet
 from .project import Project
 from .sequence import Sequence
 from .shot import Shot
@@ -61,7 +61,34 @@ class Task(Base):
         '''Returns Users instances assigned to Task'''
         query = User.query()
         query = query.join(UserTask).filter(UserTask.task_id == self.id)
-        return query.all()
+        return ResultSet(query.all())
+
+    @users.setter
+    def users(self, users):
+        '''
+        Assign Users to Task.
+
+            Supports operator assignment:
+                self.users = []
+                self.users += user
+                self.users -= user
+                self.users += [user]
+                self.users -= [user]
+        '''
+        # TODO: replce with entity's specific session context
+        # from ..db import session_context
+        utasks = UserTask.find(task=self)
+
+        with self.session_context() as session:
+
+            for utask in utasks:
+                if utask.user_id not in [u.id for u in users]:
+                    session.delete(utask)
+
+            for user in users:
+                if user.id not in [u.user_id for u in utasks]:
+                    new = UserTask(user_id=user.id, task_id=self.id)
+                    session.add(new)
 
     @classmethod
     def find(cls, project=None, entity=None, name=None, stage=None, status=None,
@@ -74,9 +101,9 @@ class Task(Base):
                 entity       (Entity) : parent Shot, Sequence or Asset instance.
                 name            (str) : Task name.
                 stage           (str) : Task stage.
-                user            (user): User assignment.
-                start_date  (datetime): start date. defaults to None.
-                end_date    (datetime): end date. defaults to None.
+                user           (user) : User assignment.
+                start_date (datetime) : start date. defaults to None.
+                end_date   (datetime) : end date. defaults to None.
                 status          (str) : Task status.
                 id         (int/list) : Task id(s).
                 shotgun_id (int/list) : Task shotgun id(s).

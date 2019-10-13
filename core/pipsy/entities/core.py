@@ -2,6 +2,7 @@
 '''Entities Base Class'''
 
 # imports
+from contextlib import contextmanager
 from sqlalchemy import inspect, MetaData, DateTime, String, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.util import identity_key
@@ -53,6 +54,25 @@ class BaseEntity(object):
                 value = getattr(self, col.name)
 
             yield(col.name, value)
+
+    @contextmanager
+    def session_context(self):
+        '''Return a entity's session context'''
+        session = inspect(self).session
+        assert session, '{} is not attached to any session'.format(self)
+        session.begin(subtransactions=True)
+
+        try:
+            yield session
+            session.commit()
+        except (DataError, IntegrityError) as err:
+            LOG.fatal('{} {}'.format(err.__class__.__name__, err))
+            LOG.fatal('{} {}'.format(err.statement, err.params))
+            session.rollback()
+            raise
+        except Exception:
+            session.rollback()
+            raise
 
     @classmethod
     def find(cls, **kwargs):
@@ -178,3 +198,37 @@ class AttributeDict(dict):
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
+
+
+class ResultSet(set):
+    '''
+    Set with extended support for operators.
+        s = ResultSet()
+        s = []
+        s += 1
+        s -= [1]
+        s == [3]
+        s != [4]
+    '''
+    def __iadd__(self, other):
+        if isinstance(other, list):
+            self.update(other)
+        else:
+            self.add(other)
+        return self
+
+    def __isub__(self, other):
+        if isinstance(other, list):
+            self.difference_update(other)
+        else:
+            self.discard(other)
+        return self
+
+    def __eq__(self, other):
+        if isinstance(other, list):
+            return list(self) == other
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

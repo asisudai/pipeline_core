@@ -39,19 +39,24 @@ class User(Base):
 
     @hybrid_property
     def fullname(self):
-        '''
-        Return User fullname string as "{first_name} {last_name}".
-        '''
+        '''Return User fullname string as "{first_name} {last_name}".'''
         return '{} {}'.format(self.first_name, self.last_name)
 
     @fullname.expression
     def fullname(cls):
         return (cls.first_name + " " + cls.last_name)
 
+    def projects(self):
+        '''Return Projects user is assign to.'''
+        # TODO: implement this :)
+        raise NotImplementedError()
+
     @property
     def tasks(self):
+        '''Return Tasks user is assign to.'''
         from . task import Task
         return Task.find(user=self)
+
 
     @classmethod
     def find(cls, first_name=None, last_name=None, fullname=None, login=None,

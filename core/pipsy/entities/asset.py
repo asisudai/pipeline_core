@@ -35,6 +35,8 @@ class Asset(Base):
 
     _tasks = relationship('Task', backref='asset', lazy='dynamic',
                           order_by='Task.name', cascade="all, delete-orphan")
+    _instances = relationship('Instance', backref='asset', lazy='dynamic',
+                              order_by='Instance.id', cascade="all, delete-orphan")
 
     @property
     def parent(self):

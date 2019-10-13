@@ -36,6 +36,8 @@ class Shot(Base):
                       UniqueConstraint('shotgun_id', name='uq_sg')
                       )
 
+    _instances = relationship('Instance', backref='shot', lazy='dynamic',
+                              order_by='Instance.name', cascade="all, delete-orphan")
     _tasks = relationship('Task', backref='shot', lazy='dynamic',
                           order_by='Task.name', cascade="all, delete-orphan")
 

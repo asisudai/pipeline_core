@@ -1,4 +1,14 @@
+import pytest
+from sqlalchemy.orm.exc import NoResultFound
 from pipsy.entities import UserTask
+
+
+@pytest.fixture(scope="module")
+def taskuser_shot(task_shot, user):
+    try:
+        return UserTask.find_one(task=task_shot, user=user)
+    except NoResultFound:
+        return UserTask.create(task=task_shot, user=user)
 
 
 def test_cls_name():

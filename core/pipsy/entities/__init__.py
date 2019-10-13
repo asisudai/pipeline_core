@@ -7,4 +7,5 @@ from . shot import Shot
 from . asset import Asset
 from . task import Task, UserTask
 from . user import User, UserProject
+from . instance import Instance
 from . format import Format

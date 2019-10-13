@@ -35,7 +35,7 @@ def test_findby_ids(shot):
 
 
 def test_find_one(shot):
-    assert shot == shot.find_one(id=shot.id)
+    assert shot == Shot.find_one(id=shot.id)
 
 
 def test_findby_name(shot):

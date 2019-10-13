@@ -51,6 +51,8 @@ class Sequence(Base):
 
     _shots = relationship('Shot', backref='sequence', lazy='dynamic',
                           order_by='Shot.name', cascade="all, delete-orphan")
+    _instances = relationship('Instance', backref='sequence', lazy='dynamic',
+                              order_by='Instance.name', cascade="all, delete-orphan")
     _tasks = relationship('Task', backref='sequence', lazy='dynamic',
                           order_by='Task.name', cascade="all, delete-orphan")
 

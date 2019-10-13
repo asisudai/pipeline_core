@@ -17,6 +17,7 @@ class Episode(Base):
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('shotgun_id', Integer),
+                      Column('description', String(255)),
 
                       Index('ix_proj_name', 'project_id', 'name', 'status'),
                       Index('ix_sg', 'shotgun_id'),

@@ -1,4 +1,14 @@
+import pytest
+from sqlalchemy.orm.exc import NoResultFound
 from pipsy.entities import UserProject
+
+
+@pytest.fixture(scope="module")
+def userproject(project, user):
+    try:
+        return UserProject.find_one(user=user, project=project)
+    except NoResultFound:
+        return UserProject.create(user=user, project=project)
 
 
 def test_cls_name():

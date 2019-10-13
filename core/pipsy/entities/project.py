@@ -41,6 +41,8 @@ class Project(Base):
                           order_by='Task.id', cascade="all, delete-orphan")
     _userprojects = relationship('UserProject', backref='project', lazy='dynamic',
                                  cascade="all, delete-orphan")
+    _instances = relationship('Instance', backref='project', lazy='dynamic',
+                              order_by='Instance.id', cascade="all, delete-orphan")
 
     @classmethod
     def findby_name(cls, name):

@@ -75,8 +75,6 @@ class Task(Base):
                 self.users += [user]
                 self.users -= [user]
         '''
-        # TODO: replce with entity's specific session context
-        # from ..db import session_context
         utasks = UserTask.find(task=self)
 
         with self.session_context() as session:

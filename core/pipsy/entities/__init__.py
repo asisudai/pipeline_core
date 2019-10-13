@@ -6,5 +6,5 @@ from . sequence import Sequence
 from . shot import Shot
 from . asset import Asset
 from . task import Task, UserTask
-from . user import User
+from . user import User, UserProject
 from . format import Format

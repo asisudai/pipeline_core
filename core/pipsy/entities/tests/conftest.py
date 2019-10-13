@@ -5,7 +5,7 @@ import pipsy.db
 from pipsy.db import connect_database, build_engine_url
 from pipsy.entities.core import Base
 from pipsy.entities import (Project, Episode, Sequence, Shot, Asset,
-                            Task, UserTask, User)
+                            Task, UserTask, User, UserProject)
 
 
 @pytest.fixture(scope="session")
@@ -105,6 +105,13 @@ def user(session, create_db):
         return User.create(first_name='unittest', last_name='unittest',
                            email='unittest@unittest.com', login='unittest')
 
+
+@pytest.fixture(scope="session")
+def userproject(project, user):
+    try:
+        return UserProject.find_one(user=user, project=project)
+    except NoResultFound:
+        return UserProject.create(user=user, project=project)
 
 @pytest.fixture(scope="session")
 def task_shot(shot):

@@ -41,19 +41,6 @@ def test_findby_name(task_asset):
                                        name=task_asset.name)
 
 
-def test_task_user_assignment(task_asset, user):
-    task_asset.users = [user]
-    assert task_asset.users == [user]
-    task_asset.users = []
-    assert task_asset.users == []
-    task_asset.users = [user]
-    assert task_asset.users == [user]
-    task_asset.users -= user
-    assert task_asset.users == []
-    task_asset.users += user
-    assert task_asset.users == [user]
-
-
 def test_create_asset_unique_proj_name(task_asset):
     # Expecting IntegrityError error "Duplicate entry..."
     try:

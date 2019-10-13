@@ -27,3 +27,16 @@ def test_user_tasks(taskuser_shot, task_shot):
 
 def test_task_users(taskuser_shot, user):
     assert user in taskuser_shot.task.users
+
+
+def test_task_user_assignment(task_asset, user):
+    task_asset.users = [user]
+    assert task_asset.users == [user]
+    task_asset.users = []
+    assert task_asset.users == []
+    task_asset.users = [user]
+    assert task_asset.users == [user]
+    task_asset.users -= user
+    assert task_asset.users == []
+    task_asset.users += user
+    assert task_asset.users == [user]

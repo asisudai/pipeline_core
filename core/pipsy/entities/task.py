@@ -149,9 +149,7 @@ class Task(Base):
                 New Task Instance.
 
         '''
-        if not isinstance(project, Base) or not project.cls_name() == 'Project':
-            raise TypeError('project arg expected Project entity. Given {!r}'
-                            .format(type(project)))
+        cls.assert_isinstance(project, 'Project')
 
         (sequence, shot, asset) = (None, None, None)
         if not isinstance(entity, Base):
@@ -209,18 +207,8 @@ class UserTask(Base):
                 task       (Task) : Task to assignment.
                 users (User/list) : User(s) to assign.
         '''
-        if not isinstance(users, (list, set, tuple)):
-            raise TypeError('users arg must be a list of User instances. Given {!r}'
-                            .format(type(users)))
-
-        for user in users:
-            if not isinstance(user, Base) or not user.cls_name() == 'User':
-                raise TypeError('users arg expected Task entity. Given {!r}'
-                                .format(type(user)))
-
-        if not isinstance(task, Base) or not task.cls_name() == 'Task':
-            raise TypeError('task arg expected Task entity. Given {!r}'
-                            .format(type(task)))
+        cls.assert_isinstances(users, 'User')
+        cls.assert_isinstance(task, 'Task')
 
         utasks = cls.find(task=task)
 
@@ -269,13 +257,8 @@ class UserTask(Base):
             Returns:
                 New UserTask Instance.
         '''
-        if not isinstance(user, Base) or not user.cls_name() == 'User':
-            raise TypeError('user arg expected User entity. Given {!r}'
-                            .format(type(user)))
-
-        if not isinstance(task, Base) or not task.cls_name() == 'Task':
-            raise TypeError('task arg expected Task entity. Given {!r}'
-                            .format(type(task)))
+        cls.assert_isinstance(user, 'User')
+        cls.assert_isinstance(task, 'Task')
 
         data = dict(user_id = user.id,
                     task_id = task.id)

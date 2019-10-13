@@ -185,6 +185,20 @@ class BaseEntity(object):
         return db.connect_database(rdbms=db.RDBMS, host=db.HOST, port=db.PORT, user=db.USER,
                                    password=db.PASSWD, database=db.DATABASE)
 
+    @staticmethod
+    def assert_isinstances(entities, expected_cls):
+        '''Helper assertion to validate given object is expected list of Entity class'''
+        for entity in entities:
+            if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
+                raise EntityTypeError('Expected {!r} entity. Given {!r}'
+                                    .format(expected_cls, type(entity)))
+    @staticmethod
+    def assert_isinstance(entity, expected_cls):
+        '''Helper assertion to validate given object is expected Entity class'''
+        if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
+            raise EntityTypeError('Expected {!r} entity. Given {!r}'
+                                  .format(expected_cls, type(entity)))
+
 
 # Register BaseEntity with sqlAlchemy declarative base.
 metadata = MetaData()
@@ -232,3 +246,7 @@ class ResultSet(set):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class EntityTypeError(TypeError):
+    pass

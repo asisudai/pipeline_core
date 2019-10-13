@@ -171,18 +171,15 @@ class UserProject(Base):
                 user            (User): User to assignment.
                 project (Project/list): Project(s) to assign.
         '''
-        if not isinstance(user, Base) or not user.cls_name() == 'User':
-            raise TypeError('user arg expected User entity. Given {!r}'
-                            .format(type(user)))
 
         if not isinstance(projects, (list, set, tuple)):
             raise TypeError('projects arg must be a list of Project instances. Given {!r}'
                             .format(type(projects)))
 
         for project in projects:
-            if not isinstance(project, Base) or not project.cls_name() == 'Project':
-                raise TypeError('projects arg expected Project entity. Given {!r}'
-                                .format(type(project)))
+            cls.assert_isinstance(project, 'Project')
+
+        cls.assert_isinstance(user, 'User')
 
         uprojects = UserProject.find(user=user)
 
@@ -231,13 +228,8 @@ class UserProject(Base):
             Returns:
                 New UserProject Instance.
         '''
-        if not isinstance(user, Base) or not user.cls_name() == 'User':
-            raise TypeError('user arg expected User entity. Given {!r}'
-                            .format(type(user)))
-
-        if not isinstance(project, Base) or not project.cls_name() == 'Project':
-            raise TypeError('project arg expected Project entity. Given {!r}'
-                            .format(type(project)))
+        cls.assert_isinstance(user, 'User')
+        cls.assert_isinstance(project, 'Project')
 
         data = dict(user_id=user.id,
                     project_id=project.id)

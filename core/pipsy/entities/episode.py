@@ -67,9 +67,7 @@ class Episode(Base):
             Returns:
                 New Episode instance.
         '''
-        if not isinstance(project, Base) or not project.cls_name() == 'Project':
-            raise TypeError('project arg expected Project entity. Given {!r}'
-                            .format(type(project)))
+        cls.assert_isinstance(project, 'Project')
 
         data = dict(name=name,
                     basename=name,

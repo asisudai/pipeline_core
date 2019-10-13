@@ -3,11 +3,11 @@
 
 # imports
 from contextlib import contextmanager
-from sqlalchemy import inspect, MetaData, DateTime, String, JSON
+from sqlalchemy import inspect, MetaData, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.util import identity_key
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-from sqlalchemy.exc import DataError, IntegrityError, InvalidRequestError
+from sqlalchemy.exc import DataError, IntegrityError
 from pipsy import db
 from pipsy.core import logging
 
@@ -145,6 +145,7 @@ class BaseEntity(object):
         query = cls.__connect().query(cls)
 
         if project:
+            cls.assert_isinstance(project, 'Project')
             query = query.filter(cls.project_id == project.id)
 
         if name:

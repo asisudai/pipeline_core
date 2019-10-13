@@ -40,3 +40,7 @@ def test_task_user_assignment(task_asset, user):
     assert task_asset.users == []
     task_asset.users += user
     assert task_asset.users == [user]
+
+
+def test_assign_users_to_task(task_asset, user):
+    UserTask.assign_users_to_task(task_asset, [user])

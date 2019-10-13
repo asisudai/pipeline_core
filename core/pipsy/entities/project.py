@@ -2,11 +2,9 @@
 '''Project entity class'''
 
 # imports
-from sqlalchemy import (Table, Column, Integer, String, Enum, Index,
-                        UniqueConstraint, ForeignKey)
+from sqlalchemy import (Table, Column, Integer, String, Enum, Index, UniqueConstraint)
 from sqlalchemy.orm import relationship
 from .core import Base
-
 
 
 class Project(Base):

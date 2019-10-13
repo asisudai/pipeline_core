@@ -69,25 +69,13 @@ class User(Base):
                 self.projects += [project]
                 self.projects -= [project]
         '''
-        uprojects = UserProject.find(user=self)
-
-        with self.session_context() as session:
-
-            for uproj in uprojects:
-                if uproj.user_id not in [p.id for p in projects]:
-                    session.delete(uproj)
-
-            for project in projects:
-                if project.id not in [u.project_id for u in uprojects]:
-                    new = UserProject(project_id=project.id, user_id=self.id)
-                    session.add(new)
+        UserProject.assign_projects_to_user(user=self, projects=projects)
 
     @property
     def tasks(self):
         '''Return Tasks user is assign to.'''
         from . task import Task
         return Task.find(user=self)
-
 
     @classmethod
     def find(cls, first_name=None, last_name=None, fullname=None, login=None,
@@ -173,6 +161,41 @@ class UserProject(Base):
         return "{cls}(user='{user}', project='{project}')".format(cls=self.__class__.__name__,
                                                                   user=self.user_id,
                                                                   project=self.project_id)
+
+    @classmethod
+    def assign_projects_to_user(cls, user, projects):
+        '''
+        Assign Projects to User.
+
+           Args:
+                user            (User): User to assignment.
+                project (Project/list): Project(s) to assign.
+        '''
+        if not isinstance(user, Base) or not user.cls_name() == 'User':
+            raise TypeError('user arg expected User entity. Given {!r}'
+                            .format(type(user)))
+
+        if not isinstance(projects, (list, set, tuple)):
+            raise TypeError('projects arg must be a list of Project instances. Given {!r}'
+                            .format(type(projects)))
+
+        for project in projects:
+            if not isinstance(project, Base) or not project.cls_name() == 'Project':
+                raise TypeError('projects arg expected Project entity. Given {!r}'
+                                .format(type(project)))
+
+        uprojects = UserProject.find(user=user)
+
+        with user.session_context() as session:
+
+            for uproj in uprojects:
+                if uproj.user_id not in [p.id for p in projects]:
+                    session.delete(uproj)
+
+            for project in projects:
+                if project.id not in [u.project_id for u in uprojects]:
+                    new = UserProject(project_id=project.id, user_id=user.id)
+                    session.add(new)
 
     @classmethod
     def find(cls, user=None, project=None):

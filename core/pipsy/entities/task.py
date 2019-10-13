@@ -75,18 +75,7 @@ class Task(Base):
                 self.users += [user]
                 self.users -= [user]
         '''
-        utasks = UserTask.find(task=self)
-
-        with self.session_context() as session:
-
-            for utask in utasks:
-                if utask.user_id not in [u.id for u in users]:
-                    session.delete(utask)
-
-            for user in users:
-                if user.id not in [u.user_id for u in utasks]:
-                    new = UserTask(user_id=user.id, task_id=self.id)
-                    session.add(new)
+        UserTask.assign_users_to_task(task=self, users=users)
 
     @classmethod
     def find(cls, project=None, entity=None, name=None, stage=None, status=None,
@@ -210,6 +199,41 @@ class UserTask(Base):
         return "{cls}(user='{user}', task='{task}')".format(cls =self.__class__.__name__,
                                                             task=self.task_id,
                                                             user=self.user_id)
+
+    @classmethod
+    def assign_users_to_task(cls, task, users):
+        '''
+        Assign Users to Task.
+
+            Args:
+                task       (Task) : Task to assignment.
+                users (User/list) : User(s) to assign.
+        '''
+        if not isinstance(users, (list, set, tuple)):
+            raise TypeError('users arg must be a list of User instances. Given {!r}'
+                            .format(type(users)))
+
+        for user in users:
+            if not isinstance(user, Base) or not user.cls_name() == 'User':
+                raise TypeError('users arg expected Task entity. Given {!r}'
+                                .format(type(user)))
+
+        if not isinstance(task, Base) or not task.cls_name() == 'Task':
+            raise TypeError('task arg expected Task entity. Given {!r}'
+                            .format(type(task)))
+
+        utasks = cls.find(task=task)
+
+        with task.session_context() as session:
+
+            for utask in utasks:
+                if utask.user_id not in [u.id for u in users]:
+                    session.delete(utask)
+
+            for user in users:
+                if user.id not in [u.user_id for u in utasks]:
+                    new = UserTask(user_id=user.id, task_id=task.id)
+                    session.add(new)
 
     @classmethod
     def find(cls, user=None, task=None):

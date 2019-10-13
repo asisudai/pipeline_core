@@ -1,0 +1,38 @@
+#!/bin/bash
+# Python 2.7
+# Includes pipeline's environments and libraries.
+
+# Pipeline Repository:
+export PIPE_REPO="/home/asi/git/pipeline_core"
+
+# Python:
+export PYTHONPATH=${PIPE_REPO}/core:${PIPE_REPO}/python27/ubuntu:${PYTHONPATH}
+export PYTHONDONTWRITEBYTECODE=1 # Turn off generation of pyc files
+
+# Development:
+paramaters=()
+
+for i in "$@"
+do
+   :
+    if [[ $i = "--dev" ]]; then
+
+        # Add git developer folder
+        if [ -z "$PIPE_DEV_REPO" ]; then
+            echo -e "\e[41mEnvironment var PIPE_DEV_REPO need to be set first\e[0m"
+            exit 1
+        fi
+
+        # --DEV:
+        export SCL_ISDEV="True"
+        export PYTHONPATH=${PIPE_DEV_REPO}/core:${PIPE_DEV_REPO}/python27/ubuntu:${PYTHONPATH}
+        echo -e "\e[33mRunning using --dev environment: ${PIPE_DEV_REPO}\e[0m"
+
+    else
+        paramaters+=("$i")
+    fi
+done
+
+
+# Run:
+/usr/bin/python2.7 -m pytest ${PIPE_REPO}/core "${paramaters[@]}"

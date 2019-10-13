@@ -1,4 +1,5 @@
 from sqlalchemy.exc import IntegrityError
+from pipsy.core.pythonx import string_types
 from pipsy.entities import Shot
 
 
@@ -59,8 +60,8 @@ def test_cut(shot):
 
 
 def test_fullname(shot):
-    assert isinstance(shot.fullname, basestring)
+    assert isinstance(shot.fullname, string_types)
 
 
 def test_fullname_episode(shot_episode):
-    assert isinstance(shot_episode.fullname, basestring)
+    assert isinstance(shot_episode.fullname, string_types)

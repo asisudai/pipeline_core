@@ -3,9 +3,10 @@ import sqlalchemy_utils.functions
 from sqlalchemy.orm.exc import NoResultFound
 import pipsy.db
 from pipsy.db import connect_database, build_engine_url
+from pipsy.config import config
 from pipsy.entities.core import Base
-from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User)
-
+from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User,
+                            PublishKind)
 
 @pytest.fixture(scope="session")
 def session(tmpdir_factory):
@@ -27,6 +28,18 @@ def create_db(session):
     assert session.bind.url.database == 'unittest', "Not using 'unittest' database"
     Base.metadata.drop_all(session.connection().engine, checkfirst=True)
     Base.metadata.create_all(session.connection().engine, checkfirst=True)
+
+
+@pytest.fixture(scope="session")
+def create_publishkinds(session, create_db):
+    assert config.has_section('publishkind'), 'config missing "publishkind" section'
+    for name, kinddict in config.items('publishkind'):
+        kinddict = eval('dict{}'.format(kinddict))
+        assert isinstance(kinddict, dict)
+        try:
+            PublishKind.find_one(name=name, **kinddict)
+        except NoResultFound:
+            PublishKind.create(name=name, **kinddict)
 
 
 @pytest.fixture(scope="session")

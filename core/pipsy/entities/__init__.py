@@ -8,4 +8,5 @@ from . asset import Asset
 from . task import Task, UserTask
 from . user import User, UserProject
 from . instance import Instance
+from . publishkind import PublishKind
 from . format import Format

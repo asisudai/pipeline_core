@@ -182,7 +182,7 @@ class BaseEntity(object):
         if status:
             if isinstance(status, (list, tuple)):
                 query = query.filter(cls.status.in_(status))
-            elif isinstance(status, basestring):
+            elif isinstance(status, string_types):
                 query = query.filter(cls.status == status)
             else:
                 raise ValueError('Invalid argument given {}'.format(id))

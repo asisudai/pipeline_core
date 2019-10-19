@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from pipsy.core.pythonx import string_types
-from pipsy.entities import Instance
+from pipsy.entities.instance import Instance, InstanceNameExists
 
 
 @pytest.fixture(scope="module")
@@ -140,3 +140,12 @@ def test_shot_add_instance(shot, asset):
 
 def test_sequence_add_instance(sequence, asset):
     Instance.add_instance(sequence, asset, asset.name + 'new_1')
+
+
+def test_shot_add_instance_fail(shot, instance_shot):
+    # Expect to fail with InstanceNameExists error.
+    try:
+        Instance.add_instance(shot, instance_shot.asset, instance_shot.name)
+    except InstanceNameExists:
+        return
+    raise AssertionError('Expected a InstanceNameExists due to instance name exists')

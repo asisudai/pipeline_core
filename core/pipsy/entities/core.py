@@ -9,7 +9,7 @@ from sqlalchemy.orm.util import identity_key
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.exc import DataError, IntegrityError
 from .. import db
-from ..core.pythonx import string_types, int
+from ..core.pythonx import int, string_types
 from ..core import logging
 
 LOG = logging.getLogger(__name__, level=logging.INFO)
@@ -55,6 +55,25 @@ class BaseEntity(object):
                 value = getattr(self, col.name)
 
             yield(col.name, value)
+
+    @classmethod
+    def default_status(cls):
+        '''Return string of the default status'''
+        column = cls.__table__.columns.get('status')
+        return column.default.arg
+
+    @classmethod
+    def disabled_statuses(cls):
+        '''Return a tuple of disabled statuses'''
+        return ('dis',)
+
+    def is_disabled(self):
+        '''Return True/False if disabled'''
+        return (self.status in self.disabled_statuses())
+
+    def is_active(self):
+        '''Return True/False if active'''
+        return (self.status not in self.disabled_statuses())
 
     @contextmanager
     def session_context(self):
@@ -190,15 +209,17 @@ class BaseEntity(object):
     @staticmethod
     def assert_isinstances(entities, expected_cls):
         '''Helper assertion to validate given object is expected list of Entity class'''
+        expected_cls = [expected_cls] if isinstance(expected_cls, string_types) else expected_cls
         for entity in entities:
-            if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
+            if not isinstance(entity, Base) or not entity.cls_name() in expected_cls:
                 raise EntityTypeError('Expected {!r} entity. Given {!r}'
                                       .format(expected_cls, type(entity)))
 
     @staticmethod
     def assert_isinstance(entity, expected_cls):
         '''Helper assertion to validate given object is expected Entity class'''
-        if not isinstance(entity, Base) or not entity.cls_name() == expected_cls:
+        expected_cls = [expected_cls] if isinstance(expected_cls, string_types) else expected_cls
+        if not isinstance(entity, Base) or not entity.cls_name() in expected_cls:
             raise EntityTypeError('Expected {!r} entity. Given {!r}'
                                   .format(expected_cls, type(entity)))
 

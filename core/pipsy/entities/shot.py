@@ -5,7 +5,7 @@ from sqlalchemy import (Table, Column, Integer, String, Enum, Index, SmallIntege
                         ForeignKey, UniqueConstraint)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from .core import Base
+from .core import Base, ResultSet
 from .project import Project
 from .sequence import Sequence
 
@@ -65,6 +65,17 @@ class Shot(Base):
         assert isinstance(value, (tuple, list)), 'Must be a tuple. Given {}'.format(value)
         self.cut_in = value[0]
         self.cut_out = value[1]
+
+    @property
+    def instances(self):
+        '''Return all Shot Instances active and disabled'''
+        return [i for i in self._instances]
+
+    @property
+    def active_instances(self):
+        '''Return active Shot Instances'''
+        instances = [i for i in self._instances if i.is_active()]
+        return ResultSet(instances)
 
     @classmethod
     def find(cls, project=None, sequence=None, name=None, basename=None, status=None,

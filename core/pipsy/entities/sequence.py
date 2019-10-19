@@ -5,7 +5,7 @@ from sqlalchemy import (Table, Column, Integer, String, Enum, Index, SmallIntege
                         ForeignKey, UniqueConstraint)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from .core import Base
+from .core import Base, ResultSet
 from .project import Project
 from .episode import Episode
 
@@ -75,6 +75,17 @@ class Sequence(Base):
         if self.episode_id:
             return '{}_{}'.format(self.episode.name, self.name)
         return '{}'.format(self.name)
+
+    @property
+    def instances(self):
+        '''Return all Shot Instances active and disabled'''
+        return [i for i in self._instances]
+
+    @property
+    def active_instances(self):
+        '''Return active Sequence Instances'''
+        instances = [i for i in self._instances if i.is_active()]
+        return ResultSet(instances)
 
     @classmethod
     def find(cls, project=None, episode=False, name=None, status=None, id=None, shotgun_id=None):

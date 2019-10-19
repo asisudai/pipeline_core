@@ -6,6 +6,7 @@ from sqlalchemy import (Table, Column, Integer, String, Enum, Index, DateTime,
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 # from sqlalchemy.orm import relationship
+from ..core.pythonx import string_types
 from .core import Base
 from .project import Project
 from .sequence import Sequence
@@ -26,8 +27,6 @@ class Instance(Base):
                       Column('asset_id', Integer, ForeignKey(Asset.id), nullable=False),
                       Column('shotgun_id', Integer),
                       Column('description', String(255)),
-                      # TODO: MySQL server time seems to be different then host. Sync server time.
-                      # SELECT NOW();
                       Column('created', DateTime(timezone=True), server_default=func.now()),
                       Column('updated', DateTime(timezone=True), onupdate=func.now()),
 
@@ -63,6 +62,27 @@ class Instance(Base):
         {sequence.name}_{shot.name}_{instance.name}
         '''
         return '{}_{}'.format(self.shot.fullname, self.name)
+
+    @classmethod
+    def add_instance(cls, entity, asset, name):
+        '''
+        Add a new Instance for entity.
+
+            Args:
+                entity (Sequence|Shot) : Sequence or Shot parent.
+                asset          (Asset) : Asset to instance.
+                name             (str) : New instance name.
+        '''
+        cls.assert_isinstance(entity, ('Sequence', 'Shot'))
+        cls.assert_isinstance(asset, 'Asset')
+        assert isinstance(name, string_types), 'name arg must be a string. Given {!r}'.format(name)
+
+        # Raise InstanceNameExists if an instance name already exists.
+        for inst in [i for i in entity._instances if i.name == name]:
+            raise InstanceNameExists('{!r} already have an instance named {!r} with status {!r}'
+                                     .format(entity, name, inst.status))
+
+        return Instance.create(project=entity.project, entity=entity, name=name, asset=asset)
 
     @classmethod
     def find(cls, project=None, entity=None, name=None, asset=None, status=None,
@@ -145,3 +165,7 @@ class Instance(Base):
                     shotgun_id=shotgun_id)
 
         return super(Instance, cls).create(**data)
+
+
+class InstanceNameExists(RuntimeError):
+    pass

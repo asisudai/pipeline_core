@@ -108,3 +108,35 @@ def test_create_bad_arguments_shot(instance_shot):
     except TypeError:
         return
     raise AssertionError('Expected TypeError due to wrong arg type')
+
+
+def test_is_active(instance_shot):
+    assert instance_shot.is_active() is True
+
+
+def test_is_disabled(instance_shot):
+    assert instance_shot.is_disabled() is False
+
+
+def test_shot_instances(shot, instance_shot):
+    assert instance_shot in shot.instances
+
+
+def test_shot_active_instances(shot, instance_shot):
+    assert instance_shot in shot.active_instances
+
+
+def test_sequence_instances(sequence, instance_sequence):
+    assert instance_sequence in sequence.instances
+
+
+def test_sequence_active_instances(sequence, instance_sequence):
+    assert instance_sequence in sequence.active_instances
+
+
+def test_shot_add_instance(shot, asset):
+    Instance.add_instance(shot, asset, asset.name + 'new_1')
+
+
+def test_sequence_add_instance(sequence, asset):
+    Instance.add_instance(sequence, asset, asset.name + 'new_1')

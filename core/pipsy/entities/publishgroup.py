@@ -24,8 +24,8 @@ class PublishGroup(Base):
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('sequence_id', Integer, ForeignKey(Sequence.id)),
                       Column('shot_id', Integer, ForeignKey(Shot.id)),
-                      Column('asset_id', Integer, ForeignKey(Asset.id)),
                       Column('instance_id', Integer, ForeignKey(Instance.id)),
+                      Column('asset_id', Integer, ForeignKey(Asset.id)),
 
                       Index('ix_project_kind', 'project_id', 'kind_id'),
                       Index('ix_project_seq_kind', 'project_id', 'sequence_id', 'kind_id'),
@@ -136,6 +136,7 @@ class PublishGroup(Base):
                     instance_id = instance_id,
                     asset_id    = asset_id,
                     kind_id     = kind.id,
+                    lock        = lock,
                     status      = status)
 
         return super(PublishGroup, cls).create(**data)

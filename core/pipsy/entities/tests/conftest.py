@@ -8,6 +8,7 @@ from pipsy.entities.core import Base
 from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User,
                             Instance, PublishKind)
 
+
 @pytest.fixture(scope="session")
 def session(tmpdir_factory):
     pipsy.db.DATABASE = 'unittest'
@@ -116,6 +117,7 @@ def instance(shot, asset):
     except NoResultFound:
         return Instance.create(project=shot.project, entity=shot,
                                asset=asset, name=asset.name)
+
 
 @pytest.fixture(scope="session")
 def user(session, create_db):

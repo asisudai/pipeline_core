@@ -43,6 +43,8 @@ class Project(Base):
                                  cascade="all, delete-orphan")
     _instances = relationship('Instance', backref='project', lazy='dynamic',
                               order_by='Instance.id', cascade="all, delete-orphan")
+    _publishgroups = relationship('PublishGroup', backref='project', lazy='dynamic',
+                                  order_by='PublishGroup.id', cascade="all, delete-orphan")
 
     @classmethod
     def findby_name(cls, name):

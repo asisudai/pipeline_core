@@ -6,7 +6,7 @@ from pipsy.db import connect_database, build_engine_url
 from pipsy.config import config
 from pipsy.entities.core import Base
 from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User,
-                            PublishKind)
+                            Instance, PublishKind)
 
 @pytest.fixture(scope="session")
 def session(tmpdir_factory):
@@ -107,6 +107,15 @@ def asset_library(project):
     except NoResultFound:
         return Asset.create(project=project, name='camera', kind='camera', library=True)
 
+
+@pytest.fixture(scope="module")
+def instance(shot, asset):
+    try:
+        return Instance.find_one(project=shot.project, entity=shot,
+                                 asset=asset, name=asset.name)
+    except NoResultFound:
+        return Instance.create(project=shot.project, entity=shot,
+                               asset=asset, name=asset.name)
 
 @pytest.fixture(scope="session")
 def user(session, create_db):

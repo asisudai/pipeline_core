@@ -9,4 +9,5 @@ from . task import Task, UserTask
 from . user import User, UserProject
 from . instance import Instance
 from . publishkind import PublishKind
+from . publishgroup import PublishGroup
 from . format import Format

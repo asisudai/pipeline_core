@@ -38,6 +38,8 @@ class Asset(Base):
                           order_by='Task.name', cascade="all, delete-orphan")
     _instances = relationship('Instance', backref='asset', lazy='dynamic',
                               order_by='Instance.id', cascade="all, delete-orphan")
+    _publishgroups = relationship('PublishGroup', backref='asset', lazy='dynamic',
+                                  order_by='PublishGroup.id', cascade="all, delete-orphan")
 
     @property
     def parent(self):

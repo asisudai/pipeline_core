@@ -42,8 +42,10 @@ class PublishKind(Base):
                       UniqueConstraint('kind', 'subkind_virtual', 'lod', name='uq_kind_sub_lod')
                       )
 
-    _publishgroups = relationship('PublishGroup', backref='kind', lazy='dynamic',
+    _publishgroups = relationship('PublishGroup', backref='publishkind', lazy='dynamic',
                                   order_by='PublishGroup.id', cascade="all, delete-orphan")
+    _publish = relationship('Publish', backref='publishkind', lazy='dynamic',
+                            order_by='PublishGroup.id', cascade="all, delete-orphan")
 
     @classmethod
     def find(cls, name=None, nicename=None, kind=None, subkind=None, lod=None,

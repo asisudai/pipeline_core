@@ -12,25 +12,25 @@ def kind_geohigh(create_publishkinds):
 @pytest.fixture(scope="module")
 def instance_group(instance, kind_geohigh):
     try:
-        return PublishGroup.find_one(project=instance.project, entity=instance, kind=kind_geohigh)
+        return PublishGroup.find_one(project=instance.project, entity=instance, publishkind=kind_geohigh)
     except NoResultFound:
-        return PublishGroup.create(project=instance.project, entity=instance, kind=kind_geohigh)
+        return PublishGroup.create(project=instance.project, entity=instance, publishkind=kind_geohigh)
 
 
 @pytest.fixture(scope="module")
 def shot_group(shot, kind_geohigh):
     try:
-        return PublishGroup.find_one(project=shot.project, entity=shot, kind=kind_geohigh)
+        return PublishGroup.find_one(project=shot.project, entity=shot, publishkind=kind_geohigh)
     except NoResultFound:
-        return PublishGroup.create(project=shot.project, entity=shot, kind=kind_geohigh)
+        return PublishGroup.create(project=shot.project, entity=shot, publishkind=kind_geohigh)
 
 
 @pytest.fixture(scope="module")
 def sequence_group(sequence, kind_geohigh):
     try:
-        return PublishGroup.find_one(project=sequence.project, entity=sequence, kind=kind_geohigh)
+        return PublishGroup.find_one(project=sequence.project, entity=sequence, publishkind=kind_geohigh)
     except NoResultFound:
-        return PublishGroup.create(project=sequence.project, entity=sequence, kind=kind_geohigh)
+        return PublishGroup.create(project=sequence.project, entity=sequence, publishkind=kind_geohigh)
 
 
 def test_project(project, shot_group):
@@ -38,7 +38,7 @@ def test_project(project, shot_group):
 
 
 def test_kind(kind_geohigh, shot_group):
-    assert shot_group.kind == kind_geohigh
+    assert shot_group.publishkind == kind_geohigh
 
 
 def test_instance_parent(instance, instance_group):
@@ -64,7 +64,7 @@ def test_find(shot_group):
 def test_find_one(shot_group):
     assert shot_group == PublishGroup.find_one(project=shot_group.project,
                                                entity=shot_group.parent,
-                                               kind=shot_group.kind)
+                                               publishkind=shot_group.publishkind)
 
 
 def test_findby_id(shot_group):
@@ -80,7 +80,7 @@ def test_create_unique_uq_sequence_kind(sequence_group):
     try:
         PublishGroup.create(project=sequence_group.project,
                             entity=sequence_group.parent,
-                            kind=sequence_group.kind)
+                            publishkind=sequence_group.publishkind)
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
@@ -91,7 +91,7 @@ def test_create_unique_uq_shot_kind(shot_group):
     try:
         PublishGroup.create(project=shot_group.project,
                             entity=shot_group.parent,
-                            kind=shot_group.kind)
+                            publishkind=shot_group.publishkind)
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')
@@ -102,7 +102,7 @@ def test_create_unique_uq_instance_kind(instance_group):
     try:
         PublishGroup.create(project=instance_group.project,
                             entity=instance_group.parent,
-                            kind=instance_group.kind)
+                            publishkind=instance_group.publishkind)
     except IntegrityError:
         return
     raise AssertionError('Expected IntegrityError due to "Duplicate entry"')

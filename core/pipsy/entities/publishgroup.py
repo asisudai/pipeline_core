@@ -3,6 +3,7 @@
 # imports
 from sqlalchemy import (Table, Column, Integer, Enum, Index, DateTime, Boolean,
                         ForeignKey, UniqueConstraint)
+from sqlalchemy.orm import relationship
 from .core import Base
 from .project import Project
 from .sequence import Sequence
@@ -17,7 +18,7 @@ class PublishGroup(Base):
     __table__ = Table('publishgroup', Base.metadata,
                       Column('id', Integer, primary_key=True),
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
-                      Column('kind_id', Integer, ForeignKey(PublishKind.id), nullable=False),
+                      Column('publishkind_id', Integer, ForeignKey(PublishKind.id), nullable=False),
                       Column('lock', Boolean, default=False),
                       Column('checkout_user_id', Integer, default=None),
                       Column('checkout_date', DateTime, default=None),
@@ -27,17 +28,21 @@ class PublishGroup(Base):
                       Column('instance_id', Integer, ForeignKey(Instance.id)),
                       Column('asset_id', Integer, ForeignKey(Asset.id)),
 
-                      Index('ix_project_kind', 'project_id', 'kind_id'),
-                      Index('ix_project_seq_kind', 'project_id', 'sequence_id', 'kind_id'),
-                      Index('ix_project_asset_kind', 'project_id', 'asset_id', 'kind_id'),
-                      Index('ix_project_shot_kind', 'project_id', 'shot_id', 'kind_id'),
-                      Index('ix_project_instance_kind', 'project_id', 'instance_id', 'kind_id'),
+                      Index('ix_project_kind', 'project_id', 'publishkind_id'),
+                      Index('ix_project_seq_kind', 'project_id', 'sequence_id', 'publishkind_id'),
+                      Index('ix_project_asset_kind', 'project_id', 'asset_id', 'publishkind_id'),
+                      Index('ix_project_shot_kind', 'project_id', 'shot_id', 'publishkind_id'),
+                      Index('ix_project_instance_kind', 'project_id', 'instance_id',
+                            'publishkind_id'),
 
-                      UniqueConstraint('sequence_id', 'kind_id', name='uq_sequence_kind'),
-                      UniqueConstraint('shot_id', 'kind_id', name='uq_shot_kind'),
-                      UniqueConstraint('asset_id', 'kind_id', name='uq_asset_kind'),
-                      UniqueConstraint('instance_id', 'kind_id', name='uq_instance_kind')
+                      UniqueConstraint('sequence_id', 'publishkind_id', name='uq_sequence_kind'),
+                      UniqueConstraint('shot_id', 'publishkind_id', name='uq_shot_kind'),
+                      UniqueConstraint('asset_id', 'publishkind_id', name='uq_asset_kind'),
+                      UniqueConstraint('instance_id', 'publishkind_id', name='uq_instance_kind')
                       )
+
+    _publish = relationship('Publish', backref='publishgroup', lazy='dynamic',
+                            order_by='PublishGroup.id', cascade="all, delete-orphan")
 
     def __repr__(self):
         return "{cls}(id={id})".format(cls=self.__class__.__name__, id=self.id)
@@ -58,17 +63,17 @@ class PublishGroup(Base):
             return self.asset
 
     @classmethod
-    def find(cls, project=None, entity=None, kind=None, lock=None, status=None, id=None):
+    def find(cls, project=None, entity=None, publishkind=None, lock=None, status=None, id=None):
         '''
         Return PublishGroup instances by query arguments
 
             Args:
-                project      (Project) : parent Project instance.
+                project          (Project) : parent Project instance.
                 entity   (Sequence|Shot|Asset|instance) : PublishGroup parent entity.
-                kind     (PublishKind) : PublishGroup kind.
-                lock     (bool)        : PublishGroup lock state.
-                status           (str) : PublishGroup status.
-                id          (int/list) : PublishGroup id(s).
+                publishkind  (PublishKind) : PublishGroup kind.
+                lock                (bool) : PublishGroup lock state.
+                status               (str) : PublishGroup status.
+                id              (int/list) : PublishGroup id(s).
 
             Returns:
                 A list of PublishGroup instances matching find arguments.
@@ -91,9 +96,9 @@ class PublishGroup(Base):
             else:
                 query = query.filter(field == entity.id)
 
-        if kind:
-            cls.assert_isinstance(kind, 'PublishKind')
-            query = query.filter(cls.kind_id == kind.id)
+        if publishkind:
+            cls.assert_isinstance(publishkind, 'PublishKind')
+            query = query.filter(cls.publishkind_id == publishkind.id)
 
         if lock:
             query = query.filter(cls.lock == lock)
@@ -101,24 +106,24 @@ class PublishGroup(Base):
         return query.all()
 
     @classmethod
-    def create(cls, project, entity, kind, lock=None, status=None):
+    def create(cls, project, entity, publishkind, lock=None, status=None):
         '''
         Create a PublishGroup instance.
 
             Args:
-                project      (Project) : parent Project instance.
+                project         (Project) : parent Project instance.
                 entity   (Sequence|Shot|Asset|instance) : PublishGroup parent entity.
-                kind     (PublishKind) : PublishGroup kind.
-                lock     (bool)        : PublishGroup lock state.
-                status           (str) : PublishGroup status.
-                id          (int/list) : PublishGroup id(s).
+                publishkind (PublishKind) : PublishGroup kind.
+                lock               (bool) : PublishGroup lock state.
+                status              (str) : PublishGroup status.
+                id             (int/list) : PublishGroup id(s).
 
             Returns:
                 New PublishGroup Instance.
         '''
         cls.assert_isinstance(project, 'Project')
         cls.assert_isinstance(entity, ('Sequence', 'Shot', 'Asset', 'Instance'))
-        cls.assert_isinstance(kind, 'PublishKind')
+        cls.assert_isinstance(publishkind, 'PublishKind')
 
         (sequence_id, shot_id, asset_id, instance_id) = (None, None, None, None)
         if entity.cls_name() == 'Sequence':
@@ -130,13 +135,13 @@ class PublishGroup(Base):
         elif entity.cls_name() == 'Instance':
             instance_id = entity.id
 
-        data = dict(project_id  = project.id,
-                    sequence_id = sequence_id,
-                    shot_id     = shot_id,
-                    instance_id = instance_id,
-                    asset_id    = asset_id,
-                    kind_id     = kind.id,
-                    lock        = lock,
-                    status      = status)
+        data = dict(project_id     = project.id,
+                    sequence_id    = sequence_id,
+                    shot_id        = shot_id,
+                    instance_id    = instance_id,
+                    asset_id       = asset_id,
+                    publishkind_id = publishkind.id,
+                    lock           = lock,
+                    status         = status)
 
         return super(PublishGroup, cls).create(**data)

@@ -35,6 +35,8 @@ class User(Base):
                                  cascade="all, delete-orphan")
     _usertasks = relationship('UserTask', backref='user', lazy='dynamic',
                               cascade="all, delete-orphan")
+    _publishes = relationship('Publish', backref='user', lazy='dynamic',
+                              cascade="all, delete-orphan")
 
     def __repr__(self):
         return "{cls}(login='{login}', id={id})".format(cls=self.__class__.__name__,

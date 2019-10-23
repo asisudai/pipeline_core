@@ -53,6 +53,8 @@ class Sequence(Base):
                           order_by='Shot.name', cascade="all, delete-orphan")
     _instances = relationship('Instance', backref='sequence', lazy='dynamic',
                               order_by='Instance.name', cascade="all, delete-orphan")
+    _publishgroups = relationship('PublishGroup', backref='sequence', lazy='dynamic',
+                                  order_by='PublishGroup.id', cascade="all, delete-orphan")
     _tasks = relationship('Task', backref='sequence', lazy='dynamic',
                           order_by='Task.name', cascade="all, delete-orphan")
 

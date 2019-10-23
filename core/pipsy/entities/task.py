@@ -101,15 +101,13 @@ class Task(Base):
         query = cls.query(project=project, name=name, id=id, status=status, shotgun_id=shotgun_id)
 
         if entity:
+            cls.assert_isinstance(entity, ('Sequence', 'Shot', 'Asset'))
             if entity.cls_name() == 'Sequence':
                 field = cls.sequence_id
             elif entity.cls_name() == 'Shot':
                 field = cls.shot_id
             elif entity.cls_name() == 'Asset':
                 field = cls.asset_id
-            else:
-                raise TypeError('entity arg must be an Sequence or Shot or Asset class. Given {!r}'
-                                .format(type(entity)))
 
             if isinstance(entity, (list, tuple)):
                 query = query.filter(field.in_([e.id for e in entity]))
@@ -150,26 +148,21 @@ class Task(Base):
 
         '''
         cls.assert_isinstance(project, 'Project')
+        cls.assert_isinstance(entity, ('Sequence', 'Shot', 'Asset'))
 
-        (sequence, shot, asset) = (None, None, None)
-        if not isinstance(entity, Base):
-            raise TypeError('entity arg must be an Entity class. Given {!r}'
-                            .format(type(entity)))
-        elif entity.cls_name() == 'Sequence':
-            sequence = entity
+        (sequence_id, shot_id, asset_id) = (None, None, None)
+        if entity.cls_name() == 'Sequence':
+            sequence_id = entity.id
         elif entity.cls_name() == 'Shot':
-            shot = entity
+            shot_id = entity.id
         elif entity.cls_name() == 'Asset':
-            asset = entity
-        else:
-            raise TypeError('entity arg must be a Sequence or Shot or Asset. Given {!r}'
-                            .format(type(entity)))
+            asset_id = entity.id
 
         data = dict(name=name,
                     project_id=project.id,
-                    sequence_id=getattr(sequence, 'id', None),
-                    shot_id=getattr(shot, 'id', None),
-                    asset_id=getattr(asset, 'id', None),
+                    sequence_id=sequence_id,
+                    shot_id=shot_id,
+                    asset_id=asset_id,
                     stage=stage,
                     start_date=start_date,
                     end_date=end_date,

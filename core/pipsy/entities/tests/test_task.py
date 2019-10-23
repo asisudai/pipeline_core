@@ -32,7 +32,7 @@ def test_findby_ids(task_asset):
 
 
 def test_find_one(task_asset):
-    assert task_asset == task_asset.find_one(id=task_asset.id)
+    assert task_asset == Task.find_one(id=task_asset.id)
 
 
 def test_findby_name(task_asset):

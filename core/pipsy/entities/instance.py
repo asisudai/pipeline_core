@@ -5,7 +5,7 @@ from sqlalchemy import (Table, Column, Integer, String, Enum, Index, DateTime,
                         ForeignKey, UniqueConstraint)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship
 from ..core.pythonx import string_types
 from .core import Base
 from .project import Project
@@ -38,8 +38,10 @@ class Instance(Base):
                       UniqueConstraint('sequence_id', 'name', name='uq_seq_name'),
                       UniqueConstraint('shot_id', 'name', name='uq_shot_name'),
                       UniqueConstraint('shotgun_id', name='uq_sg')
-
                       )
+
+    _publishgroups = relationship('PublishGroup', backref='instance', lazy='dynamic',
+                                  order_by='PublishGroup.id', cascade="all, delete-orphan")
 
     @property
     def parent(self):

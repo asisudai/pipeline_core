@@ -3,8 +3,10 @@ import sqlalchemy_utils.functions
 from sqlalchemy.orm.exc import NoResultFound
 import pipsy.db
 from pipsy.db import connect_database, build_engine_url
+from pipsy.config import config
 from pipsy.entities.core import Base
-from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User)
+from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User,
+                            Instance, PublishKind, PublishGroup)
 
 
 @pytest.fixture(scope="session")
@@ -27,6 +29,18 @@ def create_db(session):
     assert session.bind.url.database == 'unittest', "Not using 'unittest' database"
     Base.metadata.drop_all(session.connection().engine, checkfirst=True)
     Base.metadata.create_all(session.connection().engine, checkfirst=True)
+
+
+@pytest.fixture(scope="session")
+def create_publishkinds(session, create_db):
+    assert config.has_section('publishkind'), 'config missing "publishkind" section'
+    for name, kinddict in config.items('publishkind'):
+        kinddict = eval('dict{}'.format(kinddict))
+        assert isinstance(kinddict, dict)
+        try:
+            PublishKind.find_one(name=name, **kinddict)
+        except NoResultFound:
+            PublishKind.create(name=name, **kinddict)
 
 
 @pytest.fixture(scope="session")
@@ -95,6 +109,16 @@ def asset_library(project):
         return Asset.create(project=project, name='camera', kind='camera', library=True)
 
 
+@pytest.fixture(scope="module")
+def instance(shot, asset):
+    try:
+        return Instance.find_one(project=shot.project, entity=shot,
+                                 asset=asset, name=asset.name)
+    except NoResultFound:
+        return Instance.create(project=shot.project, entity=shot,
+                               asset=asset, name=asset.name)
+
+
 @pytest.fixture(scope="session")
 def user(session, create_db):
     try:
@@ -133,3 +157,18 @@ def task_asset(asset):
     except NoResultFound:
         return Task.create(project=asset.project, entity=asset,
                            name='build geo', stage='modeling')
+
+
+@pytest.fixture(scope="module")
+def publishkind_geohigh(create_publishkinds):
+    return PublishKind.find_one(kind='geo', lod='high')
+
+
+@pytest.fixture(scope="module")
+def publishgroup_shot(shot, publishkind_geohigh):
+    try:
+        return PublishGroup.find_one(project=shot.project, entity=shot,
+                                     publishkind=publishkind_geohigh)
+    except NoResultFound:
+        return PublishGroup.create(project=shot.project, entity=shot,
+                                   publishkind=publishkind_geohigh)

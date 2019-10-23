@@ -38,6 +38,8 @@ class Shot(Base):
 
     _instances = relationship('Instance', backref='shot', lazy='dynamic',
                               order_by='Instance.name', cascade="all, delete-orphan")
+    _publishgroups = relationship('PublishGroup', backref='shot', lazy='dynamic',
+                                  order_by='PublishGroup.id', cascade="all, delete-orphan")
     _tasks = relationship('Task', backref='shot', lazy='dynamic',
                           order_by='Task.name', cascade="all, delete-orphan")
 

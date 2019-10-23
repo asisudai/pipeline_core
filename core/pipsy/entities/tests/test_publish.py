@@ -1,31 +1,18 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from pipsy.entities import PublishKind, PublishGroup, Publish
+from pipsy.entities import Publish
 
 
 @pytest.fixture(scope="module")
-def kind_geohigh(create_publishkinds):
-    return PublishKind.find_one(kind='geo', lod='high')
-
-
-@pytest.fixture(scope="module")
-def shot_group(shot, kind_geohigh):
+def publish(publishgroup_shot, user):
     try:
-        return PublishGroup.find_one(project=shot.project, entity=shot, publishkind=kind_geohigh)
-    except NoResultFound:
-        return PublishGroup.create(project=shot.project, entity=shot, publishkind=kind_geohigh)
-
-
-@pytest.fixture(scope="module")
-def publish(shot_group, user):
-    try:
-        return Publish.find_one(project=shot_group.project, publishgroup=shot_group,
-                                publishkind=shot_group.publishkind, user=user, version=1,
+        return Publish.find_one(project=publishgroup_shot.project, publishgroup=publishgroup_shot,
+                                publishkind=publishgroup_shot.publishkind, user=user, version=1,
                                 root='/tmp/path')
     except NoResultFound:
-        return Publish.create(project=shot_group.project, publishgroup=shot_group,
-                              publishkind=shot_group.publishkind, user=user, version=1,
+        return Publish.create(project=publishgroup_shot.project, publishgroup=publishgroup_shot,
+                              publishkind=publishgroup_shot.publishkind, user=user, version=1,
                               root='/tmp/path')
 
 
@@ -33,16 +20,16 @@ def test_project(publish, project):
     assert publish.project == project
 
 
-def test_publishkind(kind_geohigh, publish):
-    assert publish.publishkind == kind_geohigh
+def test_publishkind(publishkind_geohigh, publish):
+    assert publish.publishkind == publishkind_geohigh
 
 
 def test_parent(publish, shot):
     assert publish.parent == shot
 
 
-def test_publishgroup(publish, shot_group):
-    assert publish.publishgroup == shot_group
+def test_publishgroup(publish, publishgroup_shot):
+    assert publish.publishgroup == publishgroup_shot
 
 
 def test_cls_name():

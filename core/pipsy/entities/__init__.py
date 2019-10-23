@@ -11,4 +11,5 @@ from . instance import Instance
 from . publishkind import PublishKind
 from . publishgroup import PublishGroup
 from . publish import Publish
+from . publishmetadata import PublishMetadata
 from . format import Format

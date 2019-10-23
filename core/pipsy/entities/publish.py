@@ -4,6 +4,7 @@
 from sqlalchemy import (Table, Column, Integer, Enum, Index, DateTime,
                         String, SmallInteger, ForeignKey, UniqueConstraint)
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from .core import Base
 from ..core.pythonx import string_types
 from .project import Project
@@ -19,8 +20,6 @@ class Publish(Base):
                       Column('id', Integer, primary_key=True),
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
                       Column('created', DateTime(timezone=True), server_default=func.now()),
-                      Column('updated', DateTime(timezone=True), onupdate=func.now()),
-                      Column('version', SmallInteger, nullable=False),
                       Column('root', String(512), nullable=True),
                       Column('path', String(512), nullable=True),
                       Column('description', String(512)),
@@ -30,6 +29,8 @@ class Publish(Base):
                       Column('publishkind_id', Integer, ForeignKey(PublishKind.id), nullable=False),
                       Column('user_id', Integer, ForeignKey(User.id), nullable=False),
                       Column('task_id', Integer, ForeignKey(Task.id)),
+                      Column('updated', DateTime(timezone=True), onupdate=func.now()),
+                      Column('version', SmallInteger, nullable=False),
 
                       Index('ix_project_group_kind', 'project_id', 'publishgroup_id',
                             'publishkind_id'),
@@ -43,6 +44,9 @@ class Publish(Base):
                                        name="uq_group_kind_root"),
                       )
 
+    _publishmetadata = relationship('PublishMetadata', backref='publish', lazy='dynamic',
+                                    cascade="all, delete-orphan")
+
     def __repr__(self):
         return "{cls}(id={id})".format(cls=self.__class__.__name__, id=self.id)
 
@@ -53,6 +57,22 @@ class Publish(Base):
         Parent could be Sequence, Shot, Instance or Asset entity.
         '''
         return self.publishgroup.parent
+
+    @property
+    def metadata(self):
+        '''
+        Return metadata from PublishMetadata entity.
+        '''
+        _metas = [m for m in self._publishmetadata]
+        return _metas[0].metadata if _metas else None
+
+    @metadata.setter
+    def metadata(self, data):
+        '''
+        Set metadata into PublishMetadata entity.
+        '''
+        from . import PublishMetadata
+        PublishMetadata.set_metadata(self, data)
 
     @classmethod
     def find(cls, project=None, publishgroup=None, publishkind=None,

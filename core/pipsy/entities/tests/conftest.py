@@ -6,7 +6,7 @@ from pipsy.db import connect_database, build_engine_url
 from pipsy.config import config
 from pipsy.entities.core import Base
 from pipsy.entities import (Project, Episode, Sequence, Shot, Asset, Task, User,
-                            Instance, PublishKind)
+                            Instance, PublishKind, PublishGroup)
 
 
 @pytest.fixture(scope="session")
@@ -157,3 +157,18 @@ def task_asset(asset):
     except NoResultFound:
         return Task.create(project=asset.project, entity=asset,
                            name='build geo', stage='modeling')
+
+
+@pytest.fixture(scope="module")
+def publishkind_geohigh(create_publishkinds):
+    return PublishKind.find_one(kind='geo', lod='high')
+
+
+@pytest.fixture(scope="module")
+def publishgroup_shot(shot, publishkind_geohigh):
+    try:
+        return PublishGroup.find_one(project=shot.project, entity=shot,
+                                     publishkind=publishkind_geohigh)
+    except NoResultFound:
+        return PublishGroup.create(project=shot.project, entity=shot,
+                                   publishkind=publishkind_geohigh)

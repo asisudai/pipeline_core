@@ -61,7 +61,7 @@ class Publish(Base):
     @property
     def metadata(self):
         '''
-        Return metadata from PublishMetadata entity.
+        Return Publish metadata from PublishMetadata entity.
         '''
         _metas = [m for m in self._publishmetadata]
         return _metas[0].metadata if _metas else None
@@ -69,7 +69,7 @@ class Publish(Base):
     @metadata.setter
     def metadata(self, data):
         '''
-        Set metadata into PublishMetadata entity.
+        Set Publish metadata into PublishMetadata entity.
         '''
         from . import PublishMetadata
         PublishMetadata.set_metadata(self, data)

@@ -1,0 +1,14 @@
+# Film
+name: <Project.root>
+pgrp: pipeline
+children:
+    - name: assets
+      pgrp: pipeline
+      children:
+        - name: <Asset.kind>
+          defer: true
+          children:
+            - name: <Asset.basename>
+              children:
+                - name: pub
+                - name: wip

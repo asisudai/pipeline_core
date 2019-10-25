@@ -5,6 +5,7 @@
 # Pipeline Repository:
 export PIPE_REPO="/home/asi/git/pipeline_core"
 
+
 # Python:
 export PYTHONPATH=${PIPE_REPO}/core:${PIPE_REPO}/python27/ubuntu:${PYTHONPATH}
 export PYTHONDONTWRITEBYTECODE=1 # Turn off generation of pyc files
@@ -33,6 +34,11 @@ do
     fi
 done
 
+# If not argument, test entire repo
+rootdir=""
+if [ $# -eq 0 ]; then
+    rootdir="${PIPE_REPO}/core"
+fi
 
 # Run:
-/usr/bin/python2.7 -m pytest ${PIPE_REPO}/core "${paramaters[@]}"
+/usr/bin/python2.7 -m pytest ${rootdir} "${paramaters[@]}"

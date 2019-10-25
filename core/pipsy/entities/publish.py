@@ -1,7 +1,7 @@
 '''Publish entity class'''
 
 # imports
-from sqlalchemy import (Table, Column, Integer, Enum, Index, DateTime,
+from sqlalchemy import (Table, Column, Integer, Enum, Index, DateTime, DECIMAL,
                         String, SmallInteger, ForeignKey, UniqueConstraint)
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -19,18 +19,19 @@ class Publish(Base):
     __table__ = Table('publish', Base.metadata,
                       Column('id', Integer, primary_key=True),
                       Column('status', Enum('act', 'dis'), default='act', nullable=False),
-                      Column('created', DateTime(timezone=True), server_default=func.now()),
                       Column('root', String(512), nullable=True),
                       Column('path', String(512), nullable=True),
-                      Column('description', String(512)),
+                      Column('version', SmallInteger, nullable=False),
                       Column('project_id', Integer, ForeignKey(Project.id), nullable=False),
                       Column('publishgroup_id', Integer, ForeignKey(PublishGroup.id),
                              nullable=False),
                       Column('publishkind_id', Integer, ForeignKey(PublishKind.id), nullable=False),
                       Column('user_id', Integer, ForeignKey(User.id), nullable=False),
                       Column('task_id', Integer, ForeignKey(Task.id)),
+                      Column('diskspace', DECIMAL(10, 3)),  # TODO: make use of this
+                      Column('created', DateTime(timezone=True), server_default=func.now()),
                       Column('updated', DateTime(timezone=True), onupdate=func.now()),
-                      Column('version', SmallInteger, nullable=False),
+                      Column('description', String(512)),
 
                       Index('ix_project_group_kind', 'project_id', 'publishgroup_id',
                             'publishkind_id'),

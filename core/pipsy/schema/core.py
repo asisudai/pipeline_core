@@ -27,10 +27,13 @@ def _iter_schema_items(raw_schema, values, app=None, owner=None, force=False, _p
 
     if 'name' in raw_schema:
 
-        yield {'path': _parse_raw_path(current_path, values),
-               'umask': raw_schema.get('umask'),
-               'pgrp': raw_schema.get('pgrp'),
-               'type': "folder"}
+        item = {'path': _parse_raw_value(current_path, values)}
+
+        for key in raw_schema:
+            if key != 'children':
+                item[key] = raw_schema.get(key)
+        item = {k: v for k, v in item.items() if v is not None}
+        yield item
 
         for child in raw_schema.get("children", []):
             for element in _iter_schema_items(child, values, app, owner, force, current_path):
@@ -60,7 +63,7 @@ def _expand_values(values):
     return values
 
 
-def _parse_raw_path(raw_path, values):
+def _parse_raw_value(raw_path, values):
     for regex in _REG.finditer(raw_path):
         (placeholder, entity_placeholder, func) = regex.groups()
 

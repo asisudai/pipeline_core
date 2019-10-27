@@ -12,3 +12,14 @@ children:
               children:
                 - name: pub
                 - name: wip
+    - name: shots
+      pgrp: pipeline
+      children:
+        - name: <sequence.basename>
+          defer: true
+          children:
+            - name: seq
+              pgrp: pipeline
+              children:
+              - name: pub
+              - name: wip

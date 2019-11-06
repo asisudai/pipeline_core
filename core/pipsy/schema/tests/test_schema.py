@@ -24,9 +24,9 @@ def test_expand_values_task_asset(task_asset):
     assert 'value' in result.values()
 
 
-def test_iter_schema_film_task_asset(task_asset, capsys):
-    values = {task_asset.cls_name(): task_asset}
+# def test_iter_schema_film_task_asset(task_asset, capsys):
+#     values = {task_asset.cls_name(): task_asset}
 
-    with capsys.disabled():
-        for item in core.iter_schema('film', values):
-            print(item)
+#     with capsys.disabled():
+#         for item in core.iter_schema('film', values):
+#             print(item)

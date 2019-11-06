@@ -25,8 +25,8 @@ def get_path(key, fields, schema):
             resolve path
 
         Example:
-            >>> get_path('shot_root', {'shot':Shot()} 'film')
-            ['project', 'sequence', 'shot']
+            >>> get_path('shot_root', {'shot':Shot()}, 'film')
+            "/projects/unittest/sequence/101/001"
     '''
     raw_path = get_raw_path(key, schema)
     fields = _expand_fields(fields)
@@ -178,6 +178,9 @@ def _expand_fields(fields):
             return
 
     assert isinstance(fields, dict), 'fields must be type dict. Given {}'.format(type(fields))
+
+    # Copy expended dict to avoid mutation
+    fields = fields.copy()
 
     result = {}
     for key, val in fields.items():

@@ -44,3 +44,9 @@ def test_get_path_shot_film(shot):
     assert core.get_path('project_root', fields, 'film') == '/tmp/unittest'
     assert core.get_path('shot_root', fields, 'film') == '/tmp/unittest/sequence/101/001'
     assert core.get_path('shot_pub', fields, 'film') == '/tmp/unittest/sequence/101/001/pub'
+
+
+def test_get_path_keyerror(capsys):
+    # TODO: expect it to fail on KeyError
+    # with capsys.disabled():
+    raise NotImplemented()

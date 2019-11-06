@@ -1,102 +1,96 @@
 import os
 import re
-import copy
 import yaml
 
 # Schemas root folder
 SCHEMAS_ROOT = os.path.join(os.path.dirname(__file__), 'schemas')
-__SCHEMAS = dict()
-_REG = re.compile(r'(\<([\w\.]+)(.*?)\>)')
+
+REG_KEY   = re.compile(r'(\$[\w]+)')              # $key
+REG_SPLIT = re.compile(r'<([\w]+)\.?([\w.]+)?>')  # <entity.attr>
+
+__SCHEMAS_DATA = dict()
+__SCHEMAS_PATH = dict()
 
 
-def iter_schema(schema_name, values, app=None, owner=None):
-
-    raw_schema = read_schema(schema_name)
-    raw_schema_copy = copy.deepcopy(raw_schema)
-    values = _expand_values(values)
-
-    for item in _iter_schema_items(raw_schema_copy, values, app=app, owner=owner):
-        yield item
-
-
-def _iter_schema_items(raw_schema, values, app=None, owner=None, force=False, _previous_path=''):
+def get_path(key, fields, schema):
     '''
-    Iterator through schemas and yield parsed items.
+    Return resolved path using given fields
+
+        Args:
+            key     (str) : key to resolve.
+            fields (dict) : fields dict.
+            schema  (str) : schema's name.
+
+        Retrun:
+            resolve path
+
+        Example:
+            >>> get_path('shot_root', {'shot':Shot()} 'film')
+            ['project', 'sequence', 'shot']
     '''
-    current_path = os.path.join(_previous_path, raw_schema.get('name', ''))
-
-    if 'name' in raw_schema:
-
-        item = {'path': _parse_raw_value(current_path, values)}
-
-        for key in raw_schema:
-            if key != 'children':
-                item[key] = raw_schema.get(key)
-        item = {k: v for k, v in item.items() if v is not None}
-        yield item
-
-        for child in raw_schema.get("children", []):
-            for element in _iter_schema_items(child, values, app, owner, force, current_path):
-                yield element
+    raw_path = get_raw_path(key, schema)
+    fields = _expand_fields(fields)
+    return _resolve_path(raw_path, fields)
 
 
-def _expand_values(values):
-    '''Expend entities to include parents'''
-    def _get_parent(entity):
-        try:
-            parent = entity.parent
-            getattr(parent, 'cls_name')
-            return parent
-        except Exception:
-            return
+def get_raw_path(key, schema):
+    '''
+    Return a raw path for given key.
 
-    result = {}
-    for key, val in values.items():
-        parent = _get_parent(val)
-        while parent:
-            if parent.cls_name() not in result:
-                result[parent.cls_name()] = parent
-                parent = _get_parent(parent)
+        Args:
+            key    (str) : key to resolve.
+            schema (str) : schema's name.
 
-    values.update(result)
-    values = {k.lower(): v for k, v in values.items()}
-    return values
+        Retrun:
+            raw path string
 
+        Example:
+            >>> get_raw_path('asset_pub', 'film')
+            "<project.root>/assets/<asset.type>/<asset.basename>/pub"
+    '''
+    raw_schema = read_schema(schema)
 
-def _parse_raw_value(raw_path, values):
-    for regex in _REG.finditer(raw_path):
-        (placeholder, entity_placeholder, func) = regex.groups()
+    if key.lower() not in raw_schema:
+        raise KeyError('Key "{}" was not found in "{}".'.format(
+            key, __SCHEMAS_PATH[schema]))
 
-        if '.' in entity_placeholder:
-            (entity, attr) = entity_placeholder.split(".")
-            entity = entity.lower()
-            if entity not in values:
-                raise ValueError('Missing entity {!r} for path {!r}'.format(entity, raw_path))
-            placeholder_value = getattr(values[entity], attr)
-        else:
-            placeholder_value = entity_placeholder
-
-        raw_path = raw_path.replace(placeholder, placeholder_value)
-
-    return raw_path
+    return _get_raw_path_schema(key.lower(), raw_schema)
 
 
-def read_schema(name):
+def get_raw_path_fields(key, schema):
+    '''
+    Return fields needed to resolve key
+
+        Args:
+            key    (str) : key to resolve.
+            schema (str) : schema's name.
+
+        Retrun:
+            list of fields
+
+        Example:
+            >>> get_raw_path_fields('shot_root', 'film')
+            ['project', 'sequence', 'shot']
+
+    '''
+    raw_path = get_raw_path(key, schema)
+    return _get_raw_path_fields(raw_path)
+
+
+def read_schema(schema):
     '''
     Return schema with given name.
 
         Args:
-            name (str) : schema's name.
+            schema (str) : schema's name.
 
         Return:
             schema's dict
     '''
+    if __SCHEMAS_DATA.get(schema):
+        return __SCHEMAS_DATA[schema]
 
-    # Pre-read schemas
-    if __SCHEMAS.get(name):
-        return __SCHEMAS[name]
-
-    filename = 'folders_{}.schema'.format(name)
+    filename = '{}.schema'.format(schema)
     path = os.path.join(SCHEMAS_ROOT, filename)
 
     if not os.path.exists(path):
@@ -108,9 +102,99 @@ def read_schema(name):
             schema_list, path)
         schema_data = schema_list.pop()
 
-    __SCHEMAS[name] = schema_data
+    __SCHEMAS_DATA[schema] = schema_data
+    __SCHEMAS_PATH[schema] = path
+
     return schema_data
 
 
+def _resolve_path(raw_path, fields):
+    '''
+    Return a resolved path_schema.
+    Will error out schema required missing values.
+
+        Args:
+            raw_path  (str) : raw path to resolve.
+            fields   (dict) : fields dict.
+
+        Return:
+            resovled path
+    '''
+    needed = _get_raw_path_fields(raw_path)
+    missing = list(set(needed).difference(fields))
+
+    if missing:
+        raise SchemaMissingFields('Missing fields {} to resolve {!r}'.format(missing, raw_path))
+
+    for reg_element in REG_SPLIT.finditer(raw_path):
+        (value, attr) = reg_element.groups()
+        value = fields[value]
+
+        if attr and hasattr(value, attr.split(".")[0]):
+            value = eval("value.{}".format(attr))
+
+        raw_path = re.sub(reg_element.group(), str(value), raw_path)
+
+    return raw_path
+
+
+def _get_raw_path_fields(raw_path):
+    '''
+    Return a list of fields needed to resolve given raw path.
+    '''
+    result = list()
+    for regex in REG_SPLIT.finditer(raw_path):
+        field = regex.groups()[0]
+        if field not in result:
+            result.append(field)
+    return result
+
+
+def _get_raw_path_schema(key, raw_scehma):
+    '''Return a raw path_schema string'''
+    path_schema  = raw_scehma[key]
+    reg_placholder = REG_KEY.search(path_schema)
+    while reg_placholder:
+        place_value    = reg_placholder.group()
+        path_schema  = REG_KEY.sub(raw_scehma[place_value[1:]], path_schema)
+        reg_placholder = REG_KEY.search(path_schema)
+
+    return path_schema
+
+
+def _expand_fields(fields):
+    '''
+    Expend entity fields to include parent entities
+
+        Example:
+            >>> _expand_fields({'shot':Shot})
+            {'project':Project, 'sequence':Sequence, 'shot':Shot}
+    '''
+    def _get_parent(entity):
+        try:
+            parent = entity.parent
+            return parent
+        except Exception:
+            return
+
+    assert isinstance(fields, dict), 'fields must be type dict. Given {}'.format(type(fields))
+
+    result = {}
+    for key, val in fields.items():
+        parent = _get_parent(val)
+        while parent:
+            if parent.__class__.__name__ not in result:
+                result[parent.__class__.__name__] = parent
+                parent = _get_parent(parent)
+
+    fields.update(result)
+    fields = {k.lower(): v for k, v in fields.items()}
+    return fields
+
+
 class SchemaNotFound(TypeError):
+    pass
+
+
+class SchemaMissingFields(RuntimeError):
     pass

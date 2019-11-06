@@ -1,0 +1,9 @@
+
+project_root: <project.root>
+asset_root: $project_root/assets/<asset.type>/<asset.basename>
+asset_pub: $asset_root/pub
+asset_wip: $asset_root/wip
+sequence_root: $project_root/sequence/<sequence.basename>
+shot_root: $sequence_root/<shot.basename>
+shot_pub: $shot_root/pub
+shot_wip: $shot_root/wip

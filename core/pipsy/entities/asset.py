@@ -48,6 +48,13 @@ class Asset(Base):
         '''
         return self.project
 
+    @property
+    def tasks(self):
+        '''
+        Return Asset's list of Tasks.
+        '''
+        return [t for t in self._tasks if t.status not in t.disabled_statuses()]
+
     @classmethod
     def find(cls, project=None, name=None, basename=None, kind=None, library=None,
              status=None, id=None, shotgun_id=None):

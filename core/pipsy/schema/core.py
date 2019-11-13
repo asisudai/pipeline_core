@@ -1,6 +1,7 @@
 import os
 import re
 import yaml
+import pprint
 
 # Schemas root folder
 SCHEMAS_ROOT = os.path.join(os.path.dirname(__file__), 'schemas')
@@ -10,6 +11,19 @@ REG_SPLIT = re.compile(r'<([\w]+)\.?([\w.]+)?>')  # <entity.attr>
 
 __SCHEMAS_DATA = dict()
 __SCHEMAS_PATH = dict()
+
+
+def print_structure(key, fields, schema):
+    '''
+    '''
+    raw_schema = read_schema(schema)
+    fields = _expand_fields(fields)
+    keys = raw_schema['structure'][key]
+
+    for key in keys:
+        raw_path = get_raw_path(key, schema)
+        path = _resolve_path(raw_path, fields)
+        print(path)
 
 
 def get_path(key, fields, schema):
@@ -130,8 +144,10 @@ def _resolve_path(raw_path, fields):
         (value, attr) = reg_element.groups()
         value = fields[value]
 
-        if attr and hasattr(value, attr.split(".")[0]):
-            value = eval("value.{}".format(attr))
+        if not hasattr(value, attr.split(".")[0]):
+            raise AttributeError('{} has no attribute {!r}.'.format(value, attr))
+
+        value = eval("value.{}".format(attr))
 
         raw_path = re.sub(reg_element.group(), str(value), raw_path)
 

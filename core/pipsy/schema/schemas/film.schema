@@ -17,6 +17,8 @@ shot_wip: $shot_root/wip
 
 structure:
   project: [project_root]
-  sequence: [sequence_root]
-  shot: [shot_root, shot_pub, shot_wip]
-  asset: [asset_root, asset_pub, asset_wip, asset_wip_stage, asset_wip_stage_user]
+    sequence: [sequence_root]
+      shot: [shot_root, shot_pub, shot_wip]
+    asset: [asset_root, asset_pub, asset_wip]
+      asset_task: [asset_wip_stage]
+        asset_task_user: [asset_wip_stage_user]

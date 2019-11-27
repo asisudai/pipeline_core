@@ -34,7 +34,12 @@ do
 done
 
 
+
+# If not argument, test entire repo
+rootdir=""
+if [ $# -eq 0 ]; then
+    rootdir="${PIPE_REPO}/core"
+fi
+
 # Run:
-/usr/bin/python3.7 -m pytest ${PIPE_REPO}/core "${paramaters[@]}"
-# TODO: easier way to run test on specific folder or file
-# /usr/bin/python3.7 -m pytest "${paramaters[@]}"
+/usr/bin/python3.7 -m pytest ${rootdir} "${paramaters[@]}"

@@ -13,19 +13,6 @@ __SCHEMAS_DATA = dict()
 __SCHEMAS_PATH = dict()
 
 
-def print_structure(key, fields, schema):
-    '''
-    '''
-    raw_schema = read_schema(schema)
-    fields = _expand_fields(fields)
-    keys = raw_schema['structure'][key]
-
-    for key in keys:
-        raw_path = get_raw_path(key, schema)
-        path = _resolve_path(raw_path, fields)
-        print(path)
-
-
 def get_path(key, fields, schema):
     '''
     Return resolved path using given fields
